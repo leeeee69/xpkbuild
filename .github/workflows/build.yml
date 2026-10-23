@@ -1,0 +1,43 @@
+name: build
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Theos
+        run: |
+          export THEOS=$RUNNER_TEMP/theos
+          git clone --recursive --depth 1 https://github.com/theos/theos.git "$THEOS"
+          echo "THEOS=$THEOS" >> "$GITHUB_ENV"
+          echo "$THEOS/bin" >> "$GITHUB_PATH"
+
+      - name: Show environment
+        run: |
+          echo "THEOS=$THEOS"
+          ls "$THEOS" | head -20
+          xcodebuild -version || true
+          xcrun --sdk iphoneos --show-sdk-path || true
+
+      - name: Build
+        run: |
+          make clean || true
+          make package FINALPACKAGE=1
+
+      - name: Collect
+        run: |
+          mkdir -p out
+          find . -name '*.deb' -maxdepth 3 -exec cp {} out/ \; || true
+          find .theos -name '*.dylib' -exec cp {} out/ \; || true
+          ls -la out || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: xppanelkit
+          path: out/*
+          if-no-files-found: warn

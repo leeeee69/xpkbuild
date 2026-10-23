@@ -1,0 +1,9 @@
+Package: com.xiaopan.panelkit
+Name: 小潘推流助手 · 浮窗重构
+Version: 1.0.0
+Architecture: iphoneos-arm
+Description: 视图层替换（青玉主题 / 状态分区 / 面板内滚动 / 收起胶囊）。不修改业务逻辑与授权。
+Maintainer: xiaopan
+Author: xiaopan
+Section: Tweaks
+Depends: mobilesubstrate

@@ -1,0 +1,10 @@
+{ Filter = { Bundles = (
+    "com.ss.iphone.ugc.Aweme",
+    "com.zhiliaoapp.musically",
+    "com.xingin.discover",
+    "com.ss.iphone.ugc.Ame",
+    "tv.douyu.live",
+    "com.yy.kiwi",
+    "com.yy.huyalive",
+    "com.tencent.xin"
+); }; }
