@@ -6,6 +6,29 @@ UIColor *XPColor(UInt8 r, UInt8 g, UInt8 b, CGFloat a) {
     return [UIColor colorWithRed:r / 255.0 green:g / 255.0 blue:b / 255.0 alpha:a];
 }
 
+
+#pragma mark - 兼容封装
+
+static UIBlurEffect *XPBlurEffect(void) {
+    if (@available(iOS 13.0, *)) {
+        return [UIBlurEffect effectWithStyle:UIBlurEffectStyleSystemUltraThinMaterialDark];
+    }
+    return [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
+}
+
+static UIImage *XPSystemIcon(NSString *name) {
+    if (@available(iOS 13.0, *)) {
+        return [UIImage systemImageNamed:name];
+    }
+    return nil;
+}
+
+static void XPSetCornerCurve(UIView *v) {
+    if (@available(iOS 13.0, *)) {
+        XPSetCornerCurve(v);
+    }
+}
+
 #pragma mark - 通用小工具
 
 static UILabel *XPText(CGFloat size, UIFontWeight w, UIColor *color) {
@@ -33,10 +56,6 @@ static id XPGet(id obj, NSString *key) {
     @try { return [obj valueForKey:key]; } @catch (__unused NSException *e) { return nil; }
 }
 
-static BOOL XPIsOn(id obj, NSString *key) {
-    id v = XPGet(obj, key);
-    return [v respondsToSelector:@selector(isOn)] ? [v isOn] : NO;
-}
 
 static NSString *XPStr(id obj, NSString *key) {
     id v = XPGet(obj, key);
@@ -69,12 +88,12 @@ static UIColor *XPStateColor(NSString *text) {
 - (instancetype)init {
     if ((self = [super init])) {
         self.layer.cornerRadius = 7;
-        if (@available(iOS 13.0, *)) self.layer.cornerCurve = kCACornerCurveContinuous;
+        XPSetCornerCurve(self);
         self.backgroundColor = XPChipBG;
         _dot = [UIView new];
         _dot.layer.cornerRadius = 2.5;
         [self addSubview:_dot];
-        _label = XPText(XPFmicro, UIFontWeightSemibold, XPText);
+        _label = XPText(XPFmicro, UIFontWeightSemibold, XPBody);
         [self addSubview:_label];
         _dot.translatesAutoresizingMaskIntoConstraints = NO;
         _label.translatesAutoresizingMaskIntoConstraints = NO;
@@ -155,7 +174,7 @@ static UIColor *XPStateColor(NSString *text) {
     [self.buttons enumerateObjectsUsingBlock:^(UIButton *b, NSUInteger idx, BOOL *stop) {
         BOOL on = (NSInteger)idx == selected;
         b.backgroundColor = on ? XPJadeSoft : [UIColor clearColor];
-        [b setTitleColor:on ? XPJade : XPText forState:UIControlStateNormal];
+        [b setTitleColor:on ? XPJade : XPBody forState:UIControlStateNormal];
     }];
 }
 
@@ -279,6 +298,10 @@ static UIColor *XPStateColor(NSString *text) {
 @property (nonatomic, strong) UILabel *pillText;
 @property (nonatomic, assign) BOOL collapsed;
 @property (nonatomic, strong) NSLayoutConstraint *widthConstraint;
+@property (nonatomic, strong) NSLayoutConstraint *heightFit;
+@property (nonatomic, strong) NSLayoutConstraint *heightCap;
+@property (nonatomic, copy) NSArray<NSLayoutConstraint *> *expandedCons;
+@property (nonatomic, copy) NSArray<NSLayoutConstraint *> *collapsedCons;
 @end
 
 @implementation XPPanel
@@ -298,7 +321,7 @@ static UIColor *XPStateColor(NSString *text) {
     UIView *v = [UIView new];
     v.backgroundColor = XPCardBG;
     v.layer.cornerRadius = XPRadiusCard;
-    v.layer.cornerCurve = kCACornerCurveContinuous;
+    XPSetCornerCurve(v);
     return v;
 }
 
@@ -308,23 +331,26 @@ static UIColor *XPStateColor(NSString *text) {
     // 外壳
     _card = [UIView new];
     _card.layer.cornerRadius = XPRadiusPanel;
-    if (@available(iOS 13.0, *)) _card.layer.cornerCurve = kCACornerCurveContinuous;
+    XPSetCornerCurve(_card);
     _card.layer.borderWidth = 1.0 / UIScreen.mainScreen.scale;
     _card.layer.borderColor = XPBorder.CGColor;
     _card.clipsToBounds = YES;
     _card.translatesAutoresizingMaskIntoConstraints = NO;
     [self addSubview:_card];
 
-    UIVisualEffectView *blur = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleSystemUltraThinMaterialDark]];
+    UIVisualEffectView *blur = [[UIVisualEffectView alloc] initWithEffect:XPBlurEffect()];
     blur.translatesAutoresizingMaskIntoConstraints = NO;
     blur.userInteractionEnabled = NO;
     [_card addSubview:blur];
 
-    [NSLayoutConstraint activateConstraints:@[
+    _expandedCons = @[
         [_card.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
         [_card.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
         [_card.topAnchor constraintEqualToAnchor:self.topAnchor],
         [_card.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
+    ];
+    [NSLayoutConstraint activateConstraints:_expandedCons];
+    [NSLayoutConstraint activateConstraints:@[
         (_widthConstraint = [_card.widthAnchor constraintEqualToConstant:width]),
         [blur.leadingAnchor constraintEqualToAnchor:_card.leadingAnchor],
         [blur.trailingAnchor constraintEqualToAnchor:_card.trailingAnchor],
@@ -348,13 +374,28 @@ static UIColor *XPStateColor(NSString *text) {
     _stack.spacing = XPGapBlock;
     _stack.translatesAutoresizingMaskIntoConstraints = NO;
     [_scroll addSubview:_stack];
-    [NSLayoutConstraint activateConstraints:@[
-        [_stack.leadingAnchor constraintEqualToAnchor:_scroll.leadingAnchor constant:XPPadH],
-        [_stack.trailingAnchor constraintEqualToAnchor:_scroll.trailingAnchor constant:-XPPadH],
-        [_stack.topAnchor constraintEqualToAnchor:_scroll.topAnchor constant:8],
-        [_stack.bottomAnchor constraintEqualToAnchor:_scroll.bottomAnchor constant:-XPPadB],
-        [_stack.widthAnchor constraintEqualToAnchor:_scroll.widthAnchor constant:-XPPadH * 2],
-    ]];
+    NSMutableArray<NSLayoutConstraint *> *stackCons = [NSMutableArray array];
+    if (@available(iOS 11.0, *)) {
+        UILayoutGuide *content = _scroll.contentLayoutGuide;
+        UILayoutGuide *frame = _scroll.frameLayoutGuide;
+        [stackCons addObject:[_stack.leadingAnchor constraintEqualToAnchor:content.leadingAnchor constant:XPPadH]];
+        [stackCons addObject:[_stack.topAnchor constraintEqualToAnchor:content.topAnchor constant:8]];
+        [stackCons addObject:[_stack.bottomAnchor constraintEqualToAnchor:content.bottomAnchor constant:-XPPadB]];
+        [stackCons addObject:[_stack.widthAnchor constraintEqualToAnchor:frame.widthAnchor constant:-XPPadH * 2]];
+        [stackCons addObject:[_stack.centerXAnchor constraintEqualToAnchor:frame.centerXAnchor]];
+    } else {
+        [stackCons addObject:[_stack.leadingAnchor constraintEqualToAnchor:_scroll.leadingAnchor constant:XPPadH]];
+        [stackCons addObject:[_stack.topAnchor constraintEqualToAnchor:_scroll.topAnchor constant:8]];
+        [stackCons addObject:[_stack.bottomAnchor constraintEqualToAnchor:_scroll.bottomAnchor constant:-XPPadB]];
+        [stackCons addObject:[_stack.widthAnchor constraintEqualToAnchor:_scroll.widthAnchor constant:-XPPadH * 2]];
+    }
+    [NSLayoutConstraint activateConstraints:stackCons];
+    // 内容不高时面板贴合内容；内容超高时停在上限、内部滚动
+    _heightFit = [_scroll.heightAnchor constraintEqualToAnchor:_stack.heightAnchor constant:8 + XPPadB];
+    _heightFit.priority = 999;
+    _heightCap = [_scroll.heightAnchor constraintLessThanOrEqualToConstant:600];
+    _heightCap.priority = UILayoutPriorityRequired;
+    [NSLayoutConstraint activateConstraints:@[_heightFit, _heightCap]];
 
     // 抓手
     _grip = [UIView new];
@@ -414,7 +455,7 @@ static UIColor *XPStateColor(NSString *text) {
     UIView *logo = [UIView new];
     logo.backgroundColor = XPJadeSoft;
     logo.layer.cornerRadius = 11;
-    if (@available(iOS 13.0, *)) logo.layer.cornerCurve = kCACornerCurveContinuous;
+    XPSetCornerCurve(logo);
     logo.translatesAutoresizingMaskIntoConstraints = NO;
     UILabel *glyph = XPText(15, UIFontWeightBold, XPJade);
     glyph.text = @"潘";
@@ -468,7 +509,7 @@ static UIColor *XPStateColor(NSString *text) {
     [_licenseBtn addTarget:self action:@selector(tapLicense) forControlEvents:UIControlEventTouchUpInside];
 
     _collapseBtn = [UIButton buttonWithType:UIButtonTypeCustom];
-    [_collapseBtn setImage:[UIImage systemImageNamed:@"chevron.up"] forState:UIControlStateNormal];
+    [_collapseBtn setImage:XPSystemIcon(@"chevron.up") forState:UIControlStateNormal];
     _collapseBtn.tintColor = XPMuted;
     _collapseBtn.backgroundColor = XPCardBG;
     _collapseBtn.layer.cornerRadius = 8;
@@ -613,7 +654,8 @@ static UIColor *XPStateColor(NSString *text) {
     UILabel *t = XPText(XPFBlock, UIFontWeightSemibold, XPInk);
     t.text = @"视频来源";
     _sourceSeg = [[XPSeg alloc] initWithTitles:@[@"局域网", @"直连", @"本地视频"]];
-    _sourceSeg.onSelect = ^(NSInteger idx) { [self selectSource:idx]; };
+    __weak typeof(self) ws1 = self;
+    _sourceSeg.onSelect = ^(NSInteger idx) { [ws1 selectSource:idx]; };
     UIStackView *sc = [[UIStackView alloc] initWithArrangedSubviews:@[t, _sourceSeg]];
     sc.axis = UILayoutConstraintAxisVertical;
     sc.spacing = 8;
@@ -647,13 +689,14 @@ static UIColor *XPStateColor(NSString *text) {
     [_selectBtn addTarget:self action:@selector(tapSelectVideo) forControlEvents:UIControlEventTouchUpInside];
 
     _displaySeg = [[XPSeg alloc] initWithTitles:@[@"完整显示", @"铺满画面"]];
-    _displaySeg.onSelect = ^(NSInteger idx) { [self selectDisplay:idx]; };
+    __weak typeof(self) ws2 = self;
+    _displaySeg.onSelect = ^(NSInteger idx) { [ws2 selectDisplay:idx]; };
 
     _loopSwitch = [UISwitch new];
     _loopSwitch.onTintColor = XPJade;
     _loopSwitch.transform = CGAffineTransformMakeScale(0.82, 0.82);
     [_loopSwitch addTarget:self action:@selector(tapLoop) forControlEvents:UIControlEventValueChanged];
-    UILabel *loopLabel = XPText(XPFrowT, UIFontWeightSemibold, XPText);
+    UILabel *loopLabel = XPText(XPFrowT, UIFontWeightSemibold, XPBody);
     loopLabel.text = @"循环播放";
     UIView *spacer = [UIView new];
     UIStackView *loopRow = [[UIStackView alloc] initWithArrangedSubviews:@[loopLabel, spacer, _loopSwitch]];
@@ -763,7 +806,7 @@ static UIColor *XPStateColor(NSString *text) {
 
     _diagBtn = [UIButton buttonWithType:UIButtonTypeCustom];
     [_diagBtn setTitle:@"查看运行诊断日志" forState:UIControlStateNormal];
-    [_diagBtn setTitleColor:XPText forState:UIControlStateNormal];
+    [_diagBtn setTitleColor:XPBody forState:UIControlStateNormal];
     _diagBtn.titleLabel.font = XPFont(XPFaux, UIFontWeightMedium);
     _diagBtn.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
     _diagBtn.backgroundColor = XPCardBG;
@@ -838,7 +881,7 @@ static UIColor *XPStateColor(NSString *text) {
 
     UIButton *paste = [UIButton buttonWithType:UIButtonTypeCustom];
     [paste setTitle:@"粘贴" forState:UIControlStateNormal];
-    [paste setTitleColor:XPText forState:UIControlStateNormal];
+    [paste setTitleColor:XPBody forState:UIControlStateNormal];
     paste.titleLabel.font = XPFont(XPFbody, UIFontWeightSemibold);
     paste.backgroundColor = XPChipBG;
     paste.layer.cornerRadius = XPRadiusControl;
@@ -902,7 +945,7 @@ static UIColor *XPStateColor(NSString *text) {
 - (UIButton *)linkRow:(NSString *)title action:(SEL)sel {
     UIButton *b = [UIButton buttonWithType:UIButtonTypeCustom];
     [b setTitle:title forState:UIControlStateNormal];
-    [b setTitleColor:XPText forState:UIControlStateNormal];
+    [b setTitleColor:XPBody forState:UIControlStateNormal];
     b.titleLabel.font = XPFont(XPFaux, UIFontWeightMedium);
     b.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
     b.backgroundColor = XPCardBG;
@@ -928,7 +971,7 @@ static UIColor *XPStateColor(NSString *text) {
 
     _pillText = XPMonoText(XPFaux, UIFontWeightSemibold, XPInk);
     UIButton *expand = [UIButton buttonWithType:UIButtonTypeCustom];
-    [expand setImage:[UIImage systemImageNamed:@"chevron.down"] forState:UIControlStateNormal];
+    [expand setImage:XPSystemIcon(@"chevron.down") forState:UIControlStateNormal];
     expand.tintColor = XPMuted;
     [expand addTarget:self action:@selector(tapExpand) forControlEvents:UIControlEventTouchUpInside];
 
@@ -948,11 +991,13 @@ static UIColor *XPStateColor(NSString *text) {
         [row.topAnchor constraintEqualToAnchor:_pill.topAnchor],
         [row.bottomAnchor constraintEqualToAnchor:_pill.bottomAnchor],
         [_pill.heightAnchor constraintEqualToConstant:42],
+    ]];
+    _collapsedCons = @[
         [_pill.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
         [_pill.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
         [_pill.topAnchor constraintEqualToAnchor:self.topAnchor],
         [_pill.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
-    ]];
+    ];
 }
 
 #pragma mark 状态同步
@@ -990,7 +1035,6 @@ static UIColor *XPStateColor(NSString *text) {
     if (licDetail.length) self.subLabel.text = licDetail;
     else if (lic.length) self.subLabel.text = lic;
     self.subLabel.textColor = [self.subLabel.text containsString:@"已激活"] ? XPMuted : XPSand;
-    self.statusDot.backgroundColor = [self.subLabel.text containsString:@"已激活"] ? XPJade : XPSand;
 
     // 画面替换
     id bs = XPGet(c, @"blendSwitch");
@@ -1015,6 +1059,13 @@ static UIColor *XPStateColor(NSString *text) {
     if ([loop isKindOfClass:[UISwitch class]]) {
         [self.loopSwitch setOn:[(UISwitch *)loop isOn] animated:NO];
     }
+    // 显示方式分段
+    id dctrl = XPGet(c, @"localDisplayControl");
+    if ([dctrl isKindOfClass:[UISegmentedControl class]]) {
+        NSInteger di = (NSInteger)[(UISegmentedControl *)dctrl selectedSegmentIndex];
+        if (di >= 0 && di < 2) [self.displaySeg setSelected:di];
+    }
+
     // 声音
     id recSw = XPGet(c, @"internalRecordingSwitch");
     if ([recSw isKindOfClass:[UISwitch class]]) {
@@ -1043,9 +1094,9 @@ static UIColor *XPStateColor(NSString *text) {
 - (void)selectTab:(NSInteger)idx {
     BOOL video = (idx == 0);
     self.tabVideo.backgroundColor = video ? XPJadeSoft : [UIColor clearColor];
-    [self.tabVideo setTitleColor:video ? XPJade : XPText forState:UIControlStateNormal];
+    [self.tabVideo setTitleColor:video ? XPJade : XPBody forState:UIControlStateNormal];
     self.tabAudio.backgroundColor = video ? [UIColor clearColor] : XPJadeSoft;
-    [self.tabAudio setTitleColor:video ? XPText : XPJade forState:UIControlStateNormal];
+    [self.tabAudio setTitleColor:video ? XPBody : XPJade forState:UIControlStateNormal];
     self.videoPane.hidden = !video;
     self.audioPane.hidden = video;
 }
@@ -1070,10 +1121,17 @@ static UIColor *XPStateColor(NSString *text) {
 
 - (void)selectDisplay:(NSInteger)idx {
     id c = self.controller;
-    for (int i = 0; i < 2; i++) {
-        NSNumber *m = XPGet(c, @"localDisplayMode");
-        if (!m) break;
-        if (m.integerValue == idx) break;
+    id ctrl = XPGet(c, @"localDisplayControl");
+    if ([ctrl isKindOfClass:[UISegmentedControl class]]) {
+        UISegmentedControl *seg = (UISegmentedControl *)ctrl;
+        if ((NSInteger)seg.selectedSegmentIndex == idx) return;
+        seg.selectedSegmentIndex = idx;
+    }
+    SEL sel = @selector(localDisplayModeDidChange:);
+    if ([c respondsToSelector:sel]) {
+        IMP imp = [c methodForSelector:sel];
+        ((void (*)(id, SEL, id))imp)(c, sel, ctrl);
+    } else {
         XPCall(c, @selector(changeLocalDisplayMode));
     }
     [self refresh];
@@ -1086,11 +1144,11 @@ static UIColor *XPStateColor(NSString *text) {
 
 - (void)changeBlend {
     id c = self.controller;
-    SEL sel = @selector(changeBlendOpacity);
-    if ([c respondsToSelector:sel]) {
-        IMP imp = [c methodForSelector:sel];
-        ((void (*)(id, SEL, UISlider *))imp)(c, sel, self.blendSlider);
+    id slider = XPGet(c, @"blendSlider");
+    if ([slider isKindOfClass:[UISlider class]]) {
+        [(UISlider *)slider setValue:self.blendSlider.value animated:NO];
     }
+    XPCall(c, @selector(changeBlendOpacity));
     self.blendLeft.text = [NSString stringWithFormat:@"OBS %.0f%%", self.blendSlider.value * 100];
     self.blendRight.text = [NSString stringWithFormat:@"现场 %.0f%%", (1 - self.blendSlider.value) * 100];
 }
@@ -1126,7 +1184,7 @@ static UIColor *XPStateColor(NSString *text) {
 }
 
 - (void)tapRisk {
-    XPCall(self.controller, @selector(openRiskNotice));
+    XPCall(self.controller, @selector(reviewRiskNotice));
 }
 
 - (void)tapMirror { XPCall(self.controller, @selector(toggleMirror)); }
@@ -1168,15 +1226,31 @@ static UIColor *XPStateColor(NSString *text) {
 }
 
 - (void)setCollapsed:(BOOL)collapsed {
+    if (_collapsed == collapsed && self.card.superview) return;
     _collapsed = collapsed;
-    self.card.hidden = collapsed;
-    self.pill.hidden = !collapsed;
+    if (collapsed) {
+        [self.card setHidden:YES];
+        [NSLayoutConstraint deactivateConstraints:self.expandedCons];
+        [NSLayoutConstraint activateConstraints:self.collapsedCons];
+        [self.pill setHidden:NO];
+    } else {
+        [self.pill setHidden:YES];
+        [NSLayoutConstraint deactivateConstraints:self.collapsedCons];
+        [NSLayoutConstraint activateConstraints:self.expandedCons];
+        [self.card setHidden:NO];
+    }
+    [self setNeedsLayout];
 }
 
 - (BOOL)isCollapsed { return _collapsed; }
 
 - (void)updateWidth:(CGFloat)width {
     self.widthConstraint.constant = width;
+    [self setNeedsLayout];
+}
+
+- (void)updateMaxHeight:(CGFloat)height {
+    self.heightCap.constant = MAX(320, height);
     [self setNeedsLayout];
 }
 

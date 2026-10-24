@@ -1,5 +1,4 @@
 name: build
-
 on:
   push:
   workflow_dispatch:
@@ -10,34 +9,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Theos
+      - name: install theos
         run: |
-          export THEOS=$RUNNER_TEMP/theos
+          export THEOS="$RUNNER_TEMP/theos"
           git clone --recursive --depth 1 https://github.com/theos/theos.git "$THEOS"
           echo "THEOS=$THEOS" >> "$GITHUB_ENV"
           echo "$THEOS/bin" >> "$GITHUB_PATH"
 
-      - name: Show environment
+      - name: install ldid
         run: |
-          echo "THEOS=$THEOS"
-          ls "$THEOS" | head -20
-          xcodebuild -version || true
-          xcrun --sdk iphoneos --show-sdk-path || true
+          brew install ldid
+          mkdir -p "$THEOS/bin"
+          ln -sf "$(brew --prefix)/bin/ldid" "$THEOS/bin/ldid" || true
 
-      - name: Build
+      - name: build
         run: |
-          make clean || true
-          make package FINALPACKAGE=1
-
-      - name: Collect
-        run: |
-          mkdir -p out
-          find . -name '*.deb' -maxdepth 3 -exec cp {} out/ \; || true
-          find .theos -name '*.dylib' -exec cp {} out/ \; || true
-          ls -la out || true
+          make package FINALPACKAGE=1 || make
+          find . -name '*.dylib'
 
       - uses: actions/upload-artifact@v4
         with:
           name: xppanelkit
-          path: out/*
+          path: |
+            packages/*.deb
+            .theos/obj/**/*.dylib
           if-no-files-found: warn

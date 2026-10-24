@@ -17,7 +17,7 @@ UIColor *XPColor(UInt8 r, UInt8 g, UInt8 b, CGFloat a);
 #define XPLive       XPHEX(0xFF4D5F)
 // 文本
 #define XPInk        XPHEX(0xF1F6F4)
-#define XPText       XPHEX(0xBFCBC7)
+#define XPBody       XPHEX(0xBFCBC7)
 #define XPMuted      XPHEX(0x82928D)
 #define XPFaint      XPHEX(0x5A6965)
 // 线与底
