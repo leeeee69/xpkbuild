@@ -160,11 +160,12 @@ static BOOL XPIsSystemClass(const char *name) {
 }
 
 static Class XPFindPanelClass(void) {
-    // 关键：绝不遍历/实例化宿主进程里的全部类。
-    // 之前对每个类调 class_getInstanceMethod，会强制 realize 宿主的所有类，
-    // 微信这类 App 里会触发它自己的断言（"Property Name should be ..."），直接把 App 搞崩。
-    // 只碰名字带前缀的类。
-    static const char *prefixes[] = {"BLK_", "BLK", "XPB_", "XPPanel"};
+    // 反查结论：核心 dylib 是 Swift + ObjC 混合，自有类只有 22 个，名字是
+    //   BLK_XXXXXXX / CBSignalMeter / CBLocalImportButton / Boleme* / ProgramSurface / _TtC4main*
+    // 之前遍历全进程并对每个类调 class_getInstanceMethod，会强制 realize 宿主的类，
+    // 微信里直接触发它自己的断言（Property Name should be baseRequest）→ 崩溃。
+    // 现在只碰这些自有前缀。
+    static const char *prefixes[] = {"BLK_", "CB", "Boleme", "Program", "_TtC4main", "_TtC"};
     int count = objc_getClassList(NULL, 0);
     if (count <= 0) return Nil;
     Class *list = (Class *)malloc(sizeof(Class) * count);
@@ -177,31 +178,33 @@ static Class XPFindPanelClass(void) {
         Class c = list[i];
         const char *nm = class_getName(c);
         if (!nm) continue;
-        BOOL prefixed = NO;
-        for (int k = 0; k < 4; k++) {
-            size_t n = strlen(prefixes[k]);
-            if (strncmp(nm, prefixes[k], n) == 0) { prefixed = YES; break; }
+        BOOL mine = NO;
+        for (int k = 0; k < 6; k++) {
+            if (strncmp(nm, prefixes[k], strlen(prefixes[k])) == 0) { mine = YES; break; }
         }
-        if (!prefixed) continue;
+        if (!mine) continue;
         scanned++;
         @try {
-            if (!class_getInstanceMethod(c, @selector(openPanel))) continue;
-            int score = 10;
-            if (class_getInstanceVariable(c, "_card")) score += 4;
+            int score = 0;
+            if (class_getInstanceMethod(c, @selector(openPanel))) score += 6;
             if (class_getInstanceMethod(c, @selector(refreshStatus))) score += 3;
             if (class_getInstanceMethod(c, @selector(installIfNeeded))) score += 2;
-            XPLog(@"候选 %s score=%d", nm, score);
+            if (class_getInstanceMethod(c, @selector(closePanel))) score += 1;
+            BOOL hasCardIvar = class_getInstanceVariable(c, "_card") != NULL;
+            BOOL hasHostIvar = class_getInstanceVariable(c, "_hostWindow") != NULL;
+            XPLog(@"自有类 %s score=%d card=%d host=%d", nm, score, hasCardIvar, hasHostIvar);
             if (score > bestScore) { bestScore = score; best = c; }
         } @catch (NSException *e) {
             XPLog(@"探测 %s 异常: %@", nm, e.reason);
         }
     }
     free(list);
-    if (scanned == 0) {
-        XPLog(@"没有 BLK_ 前缀的类（%d 个类里），插件可能没加载到本 App", count);
+    XPLog(@"自有类共扫描 %d 个", scanned);
+    if (best && bestScore >= 6) {
+        XPLog(@"选中 %s (%d)", class_getName(best), bestScore);
+        return best;
     }
-    if (best) XPLog(@"选中 %s (%d)", class_getName(best), bestScore);
-    return best;
+    return Nil;
 }
 
 static id XPSafeGet(id obj, NSString *key) {
