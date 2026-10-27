@@ -14,9 +14,7 @@
 #import <fcntl.h>
 #import <string.h>
 #import <dlfcn.h>
-#import <zlib.h>
 #import "XPPanel.h"
-#import "XPCoreBlob.h"
 
 static NSMapTable<id, XPPanel *> *gPanels;
 static NSTimer *gSyncTimer;
@@ -100,6 +98,13 @@ static void XPInstallCrashHandlers(void) {
     }
 }
 
+
+static double XPNOW(void) { return CACurrentMediaTime(); }
+static void XPTimeIt(NSString *label, double t0) {
+    double dt = XPNOW() - t0;
+    if (dt > 0.05) XPLog(@"慢调用 %@ 耗时 %.0f ms", label, dt * 1000);
+}
+
 #pragma mark - 主线程包装
 
 static void XPOnMain(dispatch_block_t block) {
@@ -110,42 +115,6 @@ static void XPOnMain(dispatch_block_t block) {
             @try { block(); } @catch (NSException *e) { XPLog(@"主线程块异常: %@ %@", e.name, e.reason); }
         });
     }
-}
-
-#pragma mark - 内嵌核心
-
-static NSString *XPCorePath(void) {
-    return [NSTemporaryDirectory() stringByAppendingPathComponent:@"xp_core_jade.dylib"];
-}
-
-static BOOL XPLoadCore(void) {
-    NSString *path = XPCorePath();
-    NSDictionary *attr = [[NSFileManager defaultManager] attributesOfItemAtPath:path error:nil];
-    if (!attr || [attr fileSize] != XPCoreRawSize) {
-        void *buf = malloc(XPCoreRawSize);
-        if (!buf) return NO;
-        unsigned long outLen = XPCoreRawSize;
-        int rc = uncompress((Bytef *)buf, &outLen, XPCorePacked, XPCorePackedSize);
-        if (rc != Z_OK) {
-            XPLog(@"核心解压失败 zlib=%d", rc);
-            free(buf);
-            return NO;
-        }
-        NSData *data = [NSData dataWithBytesNoCopy:buf length:outLen freeWhenDone:YES];
-        NSError *err = nil;
-        if (![data writeToFile:path options:NSDataWritingAtomic error:&err]) {
-            XPLog(@"核心写盘失败: %@", err);
-            return NO;
-        }
-    }
-    void *h = dlopen(path.fileSystemRepresentation, RTLD_NOW | RTLD_GLOBAL);
-    if (!h) {
-        const char *e = dlerror();
-        XPLog(@"dlopen 核心失败: %s", e ? e : "unknown");
-        return NO;
-    }
-    XPLog(@"核心 dlopen 成功");
-    return YES;
 }
 
 #pragma mark - 类探测
@@ -288,6 +257,7 @@ static IMP XPOrigOpenPanel, XPOrigRefreshStatus, XPOrigRefreshMeters, XPOrigRefr
            XPOrigRefreshLocal, XPOrigUpdateBlend, XPOrigToggleDiag, XPOrigInstall;
 
 static void XPHookOpenPanel(id self, SEL _cmd) {
+    double t0 = XPNOW();
     @try {
         XPLog(@"openPanel 被调用");
         if (XPOrigOpenPanel) ((void (*)(id, SEL))XPOrigOpenPanel)(self, _cmd);
@@ -296,10 +266,12 @@ static void XPHookOpenPanel(id self, SEL _cmd) {
     }
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)),
                    dispatch_get_main_queue(), ^{ XPPresent(self); });
+    XPTimeIt(@"OpenPanel", t0);
 }
 
 
 static void XPHookInstall(id self, SEL _cmd) {
+    double t0 = XPNOW();
     @try {
         XPLog(@"installIfNeeded 被调用");
         if (XPOrigInstall) ((void (*)(id, SEL))XPOrigInstall)(self, _cmd);
@@ -308,10 +280,12 @@ static void XPHookInstall(id self, SEL _cmd) {
     }
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)),
                    dispatch_get_main_queue(), ^{ XPPresent(self); });
+    XPTimeIt(@"Install", t0);
 }
 
 
 static void XPHookRefreshStatus(id self, SEL _cmd) {
+    double t0 = XPNOW();
     @try {
         if (XPOrigRefreshStatus) ((void (*)(id, SEL))XPOrigRefreshStatus)(self, _cmd);
     } @catch (NSException *e) {
@@ -320,46 +294,57 @@ static void XPHookRefreshStatus(id self, SEL _cmd) {
     XPPanel *p = [XPPanels() objectForKey:self];
     if (p) XPOnMain(^{ [p refresh]; });
     else XPPresent(self);
+    XPTimeIt(@"RefreshStatus", t0);
 }
 
 static void XPHookRefreshMeters(id self, SEL _cmd, id snap) {
+    double t0 = XPNOW();
     @try {
         if (XPOrigRefreshMeters) ((void (*)(id, SEL, id))XPOrigRefreshMeters)(self, _cmd, snap);
     } @catch (NSException *e) { XPLog(@"meters 异常: %@", e.reason); }
     XPPanel *p = [XPPanels() objectForKey:self];
     if (p) XPOnMain(^{ [p refresh]; });
+    XPTimeIt(@"RefreshMeters", t0);
 }
 
 static void XPHookRefreshLicense(id self, SEL _cmd) {
+    double t0 = XPNOW();
     @try {
         if (XPOrigRefreshLicense) ((void (*)(id, SEL))XPOrigRefreshLicense)(self, _cmd);
     } @catch (NSException *e) { XPLog(@"license 异常: %@", e.reason); }
     XPPanel *p = [XPPanels() objectForKey:self];
     if (p) XPOnMain(^{ [p refresh]; });
+    XPTimeIt(@"RefreshLicense", t0);
 }
 
 static void XPHookRefreshLocal(id self, SEL _cmd) {
+    double t0 = XPNOW();
     @try {
         if (XPOrigRefreshLocal) ((void (*)(id, SEL))XPOrigRefreshLocal)(self, _cmd);
     } @catch (NSException *e) { XPLog(@"local 异常: %@", e.reason); }
     XPPanel *p = [XPPanels() objectForKey:self];
     if (p) XPOnMain(^{ [p refresh]; });
+    XPTimeIt(@"RefreshLocal", t0);
 }
 
 static void XPHookUpdateBlend(id self, SEL _cmd) {
+    double t0 = XPNOW();
     @try {
         if (XPOrigUpdateBlend) ((void (*)(id, SEL))XPOrigUpdateBlend)(self, _cmd);
     } @catch (NSException *e) { XPLog(@"blend 异常: %@", e.reason); }
     XPPanel *p = [XPPanels() objectForKey:self];
     if (p) XPOnMain(^{ [p refresh]; });
+    XPTimeIt(@"UpdateBlend", t0);
 }
 
 static void XPHookToggleDiag(id self, SEL _cmd) {
+    double t0 = XPNOW();
     @try {
         if (XPOrigToggleDiag) ((void (*)(id, SEL))XPOrigToggleDiag)(self, _cmd);
     } @catch (NSException *e) { XPLog(@"diag 异常: %@", e.reason); }
     XPPanel *p = [XPPanels() objectForKey:self];
     if (p) XPOnMain(^{ [p refresh]; });
+    XPTimeIt(@"ToggleDiag", t0);
 }
 
 static void XPReplace(Class c, SEL sel, IMP hook, IMP *store) {
@@ -388,11 +373,14 @@ static void XPInstall(void) {
 
     if (!gSyncTimer) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            gSyncTimer = [NSTimer scheduledTimerWithTimeInterval:0.4 repeats:YES block:^(NSTimer *t) {
+            gSyncTimer = [NSTimer scheduledTimerWithTimeInterval:1.0 repeats:YES block:^(NSTimer *t) {
+                if ([UIApplication sharedApplication].applicationState != UIApplicationStateActive) return;
+                double r0 = XPNOW();
                 for (id key in XPPanels()) {
                     XPPanel *p = [XPPanels() objectForKey:key];
                     @try { [p refresh]; } @catch (NSException *e) { XPLog(@"刷新异常: %@", e.reason); }
                 }
+                XPTimeIt(@"sync-refresh", r0);
             }];
             [[NSRunLoop mainRunLoop] addTimer:gSyncTimer forMode:NSRunLoopCommonModes];
         });
@@ -505,49 +493,37 @@ static void XPDiagTick(void) {
 #pragma mark - 入口
 
 %ctor {
-    // 这里只做最安全的事：装崩溃取证 + 写一行日志。
-    // 绝不在 dyld 加载期做 dlopen / UIKit —— 那会撞 loader lock，直接闪退。
+    // dyld 加载期只做最轻的事：装崩溃取证 + 一行日志
     XPInstallCrashHandlers();
-    XPLog(@"=== 载入 pid=%d stage=0 host=%@ ===", getpid(), [[NSBundle mainBundle] bundleIdentifier]);
+    XPLog(@"=== 载入 pid=%d host=%@ ===", getpid(), [[NSBundle mainBundle] bundleIdentifier]);
 
-    // 等 App 壳真正启动完再干活
+    // 屏幕日志（轻量，1.5s 一刷）
     dispatch_async(dispatch_get_main_queue(), ^{
-        [NSTimer scheduledTimerWithTimeInterval:0.6 repeats:YES block:^(NSTimer *t) { XPDiagTick(); }];
+        [NSTimer scheduledTimerWithTimeInterval:1.5 repeats:YES block:^(NSTimer *t) { XPDiagTick(); }];
     });
 
+    // 等 App 真正起来再开始探测
     [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidFinishLaunchingNotification
                                                       object:nil
                                                        queue:[NSOperationQueue mainQueue]
                                                   usingBlock:^(NSNotification *note) {
-        XPLog(@"stage=1 启动完成，准备加载核心");
-
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)),
-                       dispatch_get_main_queue(), ^{
-            @try {
-                BOOL ok = XPLoadCore();
-                XPLog(@"stage=2 dlopen 结果=%d", ok);
-            } @catch (NSException *e) {
-                XPLog(@"stage=2 异常 %@ %@", e.name, e.reason);
+        XPLog(@"启动完成，开始探测插件类");
+        __block int tries = 0;
+        NSTimer *boot = [NSTimer scheduledTimerWithTimeInterval:0.5 repeats:YES block:^(NSTimer *t) {
+            @try { XPInstall(); } @catch (NSException *e) { XPLog(@"安装异常: %@", e.reason); }
+            if (gInstalled) {
+                static BOOL badged;
+                if (!badged) {
+                    badged = YES;
+                    XPBadge(@"XP 已接管", [UIColor colorWithRed:0.05 green:0.6 blue:0.45 alpha:1]);
+                }
             }
-
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)),
-                           dispatch_get_main_queue(), ^{
-                XPLog(@"stage=3 开始挂钩");
-                __block int tries = 0;
-                NSTimer *boot = [NSTimer scheduledTimerWithTimeInterval:0.5 repeats:YES block:^(NSTimer *t) {
-                    @try { XPInstall(); } @catch (NSException *e) { XPLog(@"安装异常: %@", e.reason); }
-                    if (gInstalled) {
-                        static BOOL badged;
-                        if (!badged) {
-                            badged = YES;
-                            XPBadge(@"XP 已接管", [UIColor colorWithRed:0.05 green:0.6 blue:0.45 alpha:1]);
-                        }
-                    }
-                    if (++tries % 20 == 0) XPLog(@"stage=3 等待中 installed=%d", gInstalled);
-                    if (tries > 240) [t invalidate];
-                }];
-                [[NSRunLoop mainRunLoop] addTimer:boot forMode:NSRunLoopCommonModes];
-            });
-        });
+            if (++tries % 10 == 0) XPLog(@"探测中 %d 次 installed=%d", tries, gInstalled);
+            if (tries > 60) {
+                [t invalidate];
+                XPLog(@"探测结束 installed=%d", gInstalled);
+            }
+        }];
+        [[NSRunLoop mainRunLoop] addTimer:boot forMode:NSRunLoopCommonModes];
     }];
 }
