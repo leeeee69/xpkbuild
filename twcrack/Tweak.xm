@@ -1,14 +1,21 @@
-// TWCrack v2 — 全量门控覆盖
-// 静态排查出两处门控面：
-//   A. TW 模块：authorized / valid / expires / refreshAuthorization / leaseFormatValid: /
-//      applyLease:foregroundEpoch: / changeState:message: / activationState / 心跳&看门狗 timer
-//   B. 主镜像二次判定：consumeFrontPicker:resultCount:authorized:（人脸导入自带 authorized 参数）、previouslyAuthorized
-// 策略：布尔钉真 + 网络刷新禁用 + 租约拒绝 + 强改调用参数 + 停计时器
+// TWCrack v3 — 依据反汇编补全：直接种全局门控标志
+// 反汇编证据（valid @0x138f4b4..0x138f504）：
+//   adr x8,#0x13c1d38 ; ldarb w8,[x8] ; cmp w8,#1 ; b.ne fail     ← flagA（信封验签通过）
+//   adr x8,#0x13c1d39 ; ldarb w8,[x8] ; cmp w8,#1 ; b.ne fail     ← flagB（租约新鲜）
+//   bl  0x138ea88（取当前时间） ; ldar deadline ; fcmp ; cset w0,mi
+// 即 valid = flagA && flagB && now < deadline。
+// 只 hook 选择子覆盖不到 Swift 内联调用，所以同时把这三个全局量直接写成「已放行」。
 
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
+#import <mach-o/dyld.h>
 #import <unistd.h>
 #import <stdio.h>
+#import <string.h>
+
+#define TW_OFF_FLAG_A   0x13C1D38u
+#define TW_OFF_FLAG_B   0x13C1D39u
+#define TW_OFF_DEADLINE 0x13C1D40u
 
 static void TWLog(NSString *fmt, ...) {
     va_list ap; va_start(ap, fmt);
@@ -25,51 +32,77 @@ static Class TWCls(NSString *n) {
     return c ?: objc_getClass(n.UTF8String);
 }
 
-#pragma mark - 基础替身
+#pragma mark - 种全局门控标志
 
-static BOOL TWTrue(id self, SEL _cmd) { return YES; }
-static BOOL TWFalse(id self, SEL _cmd) { return NO; }
-static void TWSwallowB(id self, SEL _cmd, BOOL v) { }
-static void TWSwallowD(id self, SEL _cmd, double v) { }
-static void TWSwallowO(id self, SEL _cmd, id v) { }
-static void TWSwallowOO(id self, SEL _cmd, id a, id b) { }
-static void TWSwallowVoid(id self, SEL _cmd) { }
-static void TWKillTimer(id self, SEL _cmd, NSTimer *t) { if (t) [t invalidate]; }
-static double TWFuture(id self, SEL _cmd) { return 4102444800000.0; }
-
-static BOOL TWLeaseOK(id self, SEL _cmd, id lease) {
-    TWLog(@"leaseFormatValid: 直接放行");
-    return YES;
+static const uintptr_t *TWTianWenBase(void) {
+    static uintptr_t base;
+    if (base) return (const uintptr_t *)base;
+    uint32_t n = _dyld_image_count();
+    for (uint32_t i = 0; i < n; i++) {
+        const char *nm = _dyld_get_image_name(i);
+        if (!nm) continue;
+        if (!strstr(nm, "TianWen")) continue;
+        base = (uintptr_t)_dyld_get_image_header(i);
+        TWLog(@"镜像 %s base=%p", nm, (void *)base);
+        return (const uintptr_t *)base;
+    }
+    return NULL;
 }
 
-static void TWApplyLeaseNoop(id self, SEL _cmd, id lease, NSUInteger epoch) {
-    TWLog(@"applyLease 拦截 epoch=%lu", (unsigned long)epoch);
-}
+static void TWSeedFlags(void) {
+    const uintptr_t *b = TWTianWenBase();
+    if (!b) return;
+    uintptr_t base = (uintptr_t)b;
 
-static NSUInteger TWActState(id self, SEL _cmd) { return 2; }
-static void TWSetActState(id self, SEL _cmd, NSUInteger v) { }
+    unsigned char *fa = (unsigned char *)(base + TW_OFF_FLAG_A);
+    unsigned char *fb = (unsigned char *)(base + TW_OFF_FLAG_B);
+    double *dl = (double *)(base + TW_OFF_DEADLINE);
 
-#pragma mark - 主镜像：强改 authorized 参数
-
-static IMP gOrigConsumeFront;
-static void TWConsumeFront(id self, SEL _cmd, id picker, NSInteger count, BOOL authorized) {
-    if (!authorized) TWLog(@"consumeFrontPicker authorized=0，强制传 YES");
-    if (gOrigConsumeFront) {
-        ((void (*)(id, SEL, id, NSInteger, BOOL))gOrigConsumeFront)(self, _cmd, picker, count, YES);
+    // 只在该地址看起来还是「0/1 布尔」时才写，避免版本漂移写坏内存
+    @try {
+        unsigned char va = *fa, vb = *fb;
+        if (va <= 1 && vb <= 1) {
+            *fa = 1;
+            *fb = 1;
+            *dl = 4102444800.0;
+            TWLog(@"已种标志 flagA=%d flagB=%d deadline=2100", *fa, *fb);
+        } else {
+            TWLog(@"标志区不像布尔（%d/%d），跳过播种", va, vb);
+        }
+    } @catch (NSException *e) {
+        TWLog(@"播种异常 %@", e.reason);
     }
 }
 
-#pragma mark - token 兜底
+#pragma mark - 替身
 
-static IMP gOrigReadToken;
-static id TWReadToken(id self, SEL _cmd) {
-    id v = gOrigReadToken ? ((id (*)(id, SEL))gOrigReadToken)(self, _cmd) : nil;
-    if (v) return v;
-    TWLog(@"readToken 为空 → 占位 LIC2");
-    return @"LIC2.crack.local.4102444800000.00000000.00000000";
+static BOOL TWTrue(id s, SEL c) { return YES; }
+static void TWSB(id s, SEL c, BOOL v) { }
+static void TSD(id s, SEL c, double v) { }
+static void TSO(id s, SEL c, id v) { }
+static void TSOO(id s, SEL c, id a, id b) { }
+static void TSV(id s, SEL c) { }
+static void TWKillTimer(id s, SEL c, NSTimer *t) { if (t) [t invalidate]; }
+static double TWFuture(id s, SEL c) { return 4102444800.0; }
+static double TWRemaining(id s, SEL c) { return 315360000.0; }   // 10 年
+
+static BOOL TWLeaseOK(id s, SEL c, id lease) { TWLog(@"leaseFormatValid: 放行"); return YES; }
+static void TWApplyLease(id s, SEL c, id lease, NSUInteger ep) {
+    TWLog(@"applyLease 拦截 ep=%lu", (unsigned long)ep);
+    TWSeedFlags();
 }
 
-#pragma mark - 安装
+static IMP gOrigConsumeFront;
+static void TWConsumeFront(id s, SEL c, id picker, NSInteger cnt, BOOL authorized) {
+    if (!authorized) TWLog(@"consumeFrontPicker authorized=0 → 强改 YES");
+    if (gOrigConsumeFront) ((void (*)(id, SEL, id, NSInteger, BOOL))gOrigConsumeFront)(s, c, picker, cnt, YES);
+}
+
+static IMP gOrigReadToken;
+static id TWReadToken(id s, SEL c) {
+    id v = gOrigReadToken ? ((id (*)(id, SEL))gOrigReadToken)(s, c) : nil;
+    return v ?: @"LIC2.crack.local.4102444800.00000000.00000000";
+}
 
 static void TWHook(Class c, SEL sel, IMP imp, const char *tag, IMP *store) {
     if (!c) return;
@@ -77,7 +110,7 @@ static void TWHook(Class c, SEL sel, IMP imp, const char *tag, IMP *store) {
     if (!m) { TWLog(@"缺方法 %@ (%s)", NSStringFromSelector(sel), tag); return; }
     if (store) *store = method_getImplementation(m);
     method_setImplementation(m, imp);
-    TWLog(@"接管 %s -[%@ %@]", tag, NSStringFromClass(c), NSStringFromSelector(sel));
+    TWLog(@"接管 %s %@", tag, NSStringFromSelector(sel));
 }
 
 static void TWInstall(void) {
@@ -89,37 +122,32 @@ static void TWInstall(void) {
     if (!mgr && !plugin) return;
     done = YES;
 
-    // A. 布尔与时间
+    TWSeedFlags();
+
     TWHook(mgr, @selector(authorized), (IMP)TWTrue, "A1", NULL);
-    TWHook(mgr, @selector(setAuthorized:), (IMP)TWSwallowB, "A2", NULL);
+    TWHook(mgr, @selector(setAuthorized:), (IMP)TWSB, "A2", NULL);
     TWHook(mgr, NSSelectorFromString(@"valid"), (IMP)TWTrue, "A3", NULL);
-    TWHook(mgr, NSSelectorFromString(@"isValid"), (IMP)TWTrue, "A3b", NULL);
-    TWHook(mgr, NSSelectorFromString(@"setValid:"), (IMP)TWSwallowB, "A4", NULL);
-    TWHook(mgr, @selector(expires), (IMP)TWFuture, "A5", NULL);
-    TWHook(mgr, @selector(setExpires:), (IMP)TWSwallowD, "A6", NULL);
+    TWHook(mgr, @selector(expires), (IMP)TWFuture, "A4", NULL);
+    TWHook(mgr, @selector(setExpires:), (IMP)TSD, "A5", NULL);
+    TWHook(mgr, NSSelectorFromString(@"remaining"), (IMP)TWRemaining, "A6", NULL);
 
-    // B. 网络 / 租约
-    TWHook(mgr, NSSelectorFromString(@"refreshAuthorization"), (IMP)TWSwallowVoid, "B1", NULL);
+    TWHook(mgr, NSSelectorFromString(@"refreshAuthorization"), (IMP)TSV, "B1", NULL);
     TWHook(mgr, NSSelectorFromString(@"leaseFormatValid:"), (IMP)TWLeaseOK, "B2", NULL);
-    TWHook(mgr, @selector(applyLease:foregroundEpoch:), (IMP)TWApplyLeaseNoop, "B3", NULL);
+    TWHook(mgr, @selector(applyLease:foregroundEpoch:), (IMP)TWApplyLease, "B3", NULL);
+    TWHook(mgr, NSSelectorFromString(@"heartbeat"), (IMP)TSV, "B4", NULL);
+    TWHook(mgr, NSSelectorFromString(@"tick"), (IMP)TSV, "B5", NULL);
 
-    // C. 计时器
     TWHook(mgr, @selector(setHeartbeatTimer:), (IMP)TWKillTimer, "C1", NULL);
     TWHook(mgr, @selector(setWatchdog:), (IMP)TWKillTimer, "C2", NULL);
 
-    // D. 状态枚举 / 面板
-    TWHook(mgr, NSSelectorFromString(@"activationState"), (IMP)TWActState, "D1", NULL);
-    TWHook(mgr, NSSelectorFromString(@"setActivationState:"), (IMP)TWSetActState, "D2", NULL);
-    TWHook(panel, @selector(changeState:message:), (IMP)TWSwallowOO, "D3", NULL);
+    if (panel) TWHook(panel, @selector(changeState:message:), (IMP)TSOO, "D1", NULL);
 
-    // E. token 兜底
     TWHook(mgr, @selector(readToken), (IMP)TWReadToken, "E1", &gOrigReadToken);
-    TWHook(mgr, @selector(saveToken:), (IMP)TWSwallowO, "E2", NULL);
+    TWHook(mgr, @selector(saveToken:), (IMP)TSO, "E2", NULL);
 
-    // F. 主镜像二次判定
     TWHook(plugin, @selector(consumeFrontPicker:resultCount:authorized:), (IMP)TWConsumeFront, "F1", &gOrigConsumeFront);
     TWHook(plugin, NSSelectorFromString(@"previouslyAuthorized"), (IMP)TWTrue, "F2", NULL);
-    TWHook(plugin, NSSelectorFromString(@"setPreviouslyAuthorized:"), (IMP)TWSwallowB, "F3", NULL);
+    TWHook(plugin, NSSelectorFromString(@"setPreviouslyAuthorized:"), (IMP)TWSB, "F3", NULL);
 
     TWLog(@"安装完成");
 }
@@ -128,10 +156,10 @@ static void TWBadge(NSString *text, UIColor *color) {
     dispatch_async(dispatch_get_main_queue(), ^{
         UIWindow *w = [UIApplication sharedApplication].windows.firstObject;
         if (!w) return;
-        UILabel *l = (UILabel *)[w viewWithTag:0x54574302];
+        UILabel *l = (UILabel *)[w viewWithTag:0x54574303];
         if (!l) {
             l = [UILabel new];
-            l.tag = 0x54574302;
+            l.tag = 0x54574303;
             l.font = [UIFont boldSystemFontOfSize:11];
             l.textColor = UIColor.whiteColor;
             l.textAlignment = NSTextAlignmentCenter;
@@ -147,14 +175,14 @@ static void TWBadge(NSString *text, UIColor *color) {
 }
 
 %ctor {
-    TWLog(@"=== TWCrack v2 载入 pid=%d ===", getpid());
+    TWLog(@"=== TWCrack v3 载入 pid=%d ===", getpid());
     dispatch_async(dispatch_get_main_queue(), ^{
         [NSTimer scheduledTimerWithTimeInterval:0.5 repeats:YES block:^(NSTimer *t) {
             @try { TWInstall(); } @catch (NSException *e) { TWLog(@"异常 %@", e.reason); }
             static BOOL badged;
             if (!badged && TWCls(@"TWLicenseManager")) {
                 badged = YES;
-                TWBadge(@"TW 已破甲 v2", [UIColor colorWithRed:0.85 green:0.15 blue:0.2 alpha:0.92]);
+                TWBadge(@"TW 已破甲 v3", [UIColor colorWithRed:0.85 green:0.15 blue:0.2 alpha:0.92]);
             }
         }];
     });
