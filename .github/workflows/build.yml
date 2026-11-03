@@ -22,15 +22,16 @@ jobs:
           mkdir -p "$THEOS/bin"
           ln -sf "$(brew --prefix)/bin/ldid" "$THEOS/bin/ldid" || true
 
-      - name: build
+      - name: build twcrack
         run: |
+          cd twcrack
           make package FINALPACKAGE=1 || make
           find . -name '*.dylib'
 
       - uses: actions/upload-artifact@v4
         with:
-          name: xppanelkit
+          name: twcrack
           path: |
-            packages/*.deb
-            .theos/obj/**/*.dylib
+            twcrack/packages/*.deb
+            twcrack/.theos/obj/**/*.dylib
           if-no-files-found: warn
