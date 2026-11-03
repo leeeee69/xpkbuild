@@ -1,0 +1,162 @@
+  ;-- func.0138f510:
+620: method.TWLicenseManager.changeState:message: (int64_t arg1, int64_t arg2, int64_t arg3);
+`- args(x0, x2, x3) vars(7:sp[0x10..0x58])
+0x0138f510      ff8301d1       sub sp, sp, 0x60
+0x0138f514      f85f02a9       stp x24, x23, [var_20h]
+0x0138f518      f65703a9       stp x22, x21, [var_30h]
+0x0138f51c      f44f04a9       stp x20, x19, [var_40h]
+0x0138f520      fd7b05a9       stp x29, x30, [var_50h]
+0x0138f524      fd430191       add x29, sp, 0x50
+0x0138f528      f50303aa       mov x21, x3                             ; arg3
+0x0138f52c      f40302aa       mov x20, x2                             ; arg2
+0x0138f530      f30300aa       mov x19, x0                             ; arg1
+0x0138f534      1f2003d5       nop
+0x0138f538      c8571658       ldr x8, reloc.__stack_chk_guard         ; [0x13bc030:8]=0x80100000000002bd
+0x0138f53c      080140f9       ldr x8, [x8]
+0x0138f540      e80f00f9       str x8, [var_18h]
+0x0138f544      1f2003d5       nop
+0x0138f548      d6661858       ldr x22, sym._OBJC_SELECTOR_REFERENCES_.286 ; [0x13c0220:8]=0x100000013b7297
+0x0138f54c      e00303aa       mov x0, x3                              ; arg3
+0x0138f550      9f190094       bl sym.imp.objc_retain_1
+0x0138f554      e00313aa       mov x0, x19
+0x0138f558      e10316aa       mov x1, x22
+0x0138f55c      a2190094       bl sym.imp.objc_msgSend                 ; void *objc_msgSend(void *instance, char *selector)
+0x0138f560      9602004a       eor w22, w20, w0
+0x0138f564      1f2003d5       nop
+0x0138f568      01661858       ldr x1, sym._OBJC_SELECTOR_REFERENCES_.288 ; [0x13c0228:8]=0x100000013b72a2
+0x0138f56c      e00313aa       mov x0, x19
+0x0138f570      e20314aa       mov x2, x20
+0x0138f574      9c190094       bl sym.imp.objc_msgSend                 ; void *objc_msgSend(void *instance, char *selector)
+0x0138f578      088f1610       adr x8, __CFConstantStringClassReference ; 0x13bc758
+0x0138f57c      1f2003d5       nop
+0x0138f580      bf0200f1       cmp x21, 0
+0x0138f584      0201959a       csel x2, x8, x21, eq
+0x0138f588      1f2003d5       nop
+0x0138f58c      21581858       ldr x1, sym._OBJC_SELECTOR_REFERENCES_.64 ; [0x13c0090:8]=0x100000013b6f21 ; "!o;\x01"
+0x0138f590      e00313aa       mov x0, x19
+0x0138f594      94190094       bl sym.imp.objc_msgSend                 ; void *objc_msgSend(void *instance, char *selector)
+0x0138f598      e00315aa       mov x0, x21
+0x0138f59c      8f190094       bl sym.imp.objc_release_1
+0x0138f5a0      f4010036       tbz w20, 0, 0x138f5dc
+0x0138f5a4      1f2003d5       nop
+0x0138f5a8      81641858       ldr x1, sym._OBJC_SELECTOR_REFERENCES_.292 ; [0x13c0238:8]=0x100000013b72be
+0x0138f5ac      e00313aa       mov x0, x19
+0x0138f5b0      8d190094       bl sym.imp.objc_msgSend                 ; void *objc_msgSend(void *instance, char *selector)
+0x0138f5b4      683c1910       adr x8, sym._LCGateDeadline             ; 0x13c1d40
+0x0138f5b8      1f2003d5       nop
+0x0138f5bc      0900669e       fmov x9, d0
+0x0138f5c0      09fd9fc8       stlr x9, [x8]
+0x0138f5c4      a83b1910       adr x8, sym._LCGateEnabled              ; 0x13c1d38
+0x0138f5c8      1f2003d5       nop
+0x0138f5cc      29008052       mov w9, 1
+0x0138f5d0      09fd9f08       stlrb w9, [x8]
+0x0138f5d4      d6010035       cbnz w22, 0x138f60c
+0x0138f5d8      50000014       b 0x138f718
+0x0138f5dc      1f2003d5       nop
+0x0138f5e0      81621858       ldr x1, sym._OBJC_SELECTOR_REFERENCES_.290 ; [0x13c0230:8]=0x100000013b72b1
+0x0138f5e4      e003679e       fmov d0, xzr
+0x0138f5e8      e00313aa       mov x0, x19
+0x0138f5ec      7e190094       bl sym.imp.objc_msgSend                 ; void *objc_msgSend(void *instance, char *selector)
+0x0138f5f0      483a1910       adr x8, sym._LCGateEnabled              ; 0x13c1d38
+0x0138f5f4      1f2003d5       nop
+0x0138f5f8      1ffd9f08       stlrb wzr, [x8]
+0x0138f5fc      283a1910       adr x8, sym._LCGateDeadline             ; 0x13c1d40
+0x0138f600      1f2003d5       nop
+0x0138f604      1ffd9fc8       stlr xzr, [x8]
+0x0138f608      96080034       cbz w22, 0x138f718
+0x0138f60c      1f2003d5       nop
+0x0138f610      80bf1858       ldr x0, sym._OBJC_CLASSLIST_REFERENCES___.293 ; [0x13c0e00:8]=0x8010000000000317
+0x0138f614      1f2003d5       nop
+0x0138f618      41611858       ldr x1, sym._OBJC_SELECTOR_REFERENCES_.295 ; [0x13c0240:8]=0x100000013b72c7
+0x0138f61c      72190094       bl sym.imp.objc_msgSend                 ; void *objc_msgSend(void *instance, char *selector)
+0x0138f620      fd031daa       mov x29, x29
+0x0138f624      76190094       bl sym.imp.objc_retainAutoreleasedReturnValue_1
+0x0138f628      f50300aa       mov x21, x0
+0x0138f62c      68c61610       adr x8, str.cstr.authorized             ; 0x13bcef8
+0x0138f630      1f2003d5       nop
+0x0138f634      e80700f9       str x8, [var_8h]
+0x0138f638      1f2003d5       nop
+0x0138f63c      e0ba1858       ldr x0, reloc.NSNumber                  ; sym._OBJC_CLASSLIST_REFERENCES___.36
+                                                                       ; [0x13c0d98:8]=0x801000000000030a
+0x0138f640      1f2003d5       nop
+0x0138f644      21501858       ldr x1, sym._OBJC_SELECTOR_REFERENCES_.38 ; [0x13c0048:8]=0x100000013b6e6d ; "mn;\x01"
+0x0138f648      e20314aa       mov x2, x20
+0x0138f64c      66190094       bl sym.imp.objc_msgSend                 ; void *objc_msgSend(void *instance, char *selector)
+0x0138f650      fd031daa       mov x29, x29
+0x0138f654      6a190094       bl sym.imp.objc_retainAutoreleasedReturnValue_1
+0x0138f658      f60300aa       mov x22, x0
+0x0138f65c      e00b00f9       str x0, [var_10h]
+0x0138f660      1f2003d5       nop
+0x0138f664      20b91858       ldr x0, reloc.NSDictionary              ; sym._OBJC_CLASSLIST_REFERENCES___.12
+                                                                       ; [0x13c0d88:8]=0x8010000000000308
+0x0138f668      1f2003d5       nop
+0x0138f66c      214d1858       ldr x1, sym._OBJC_SELECTOR_REFERENCES_.14 ; [0x13c0010:8]=0x100000013b6dec
+0x0138f670      e2430091       add x2, sp, 0x10
+0x0138f674      e3230091       add x3, sp, 8
+0x0138f678      24008052       mov w4, 1
+0x0138f67c      5a190094       bl sym.imp.objc_msgSend                 ; void *objc_msgSend(void *instance, char *selector)
+0x0138f680      fd031daa       mov x29, x29
+0x0138f684      5e190094       bl sym.imp.objc_retainAutoreleasedReturnValue_1
+0x0138f688      f70300aa       mov x23, x0
+0x0138f68c      1f2003d5       nop
+0x0138f690      c15d1858       ldr x1, sym._OBJC_SELECTOR_REFERENCES_.299 ; [0x13c0248:8]=0x100000013b72d5
+0x0138f694      22811610       adr x2, str.cstr.TWFrameXiangLicenseStateDidChange ; section.49.__TWCONST.__cfstring
+                                                                       ; 0x13bc6b8
+0x0138f698      1f2003d5       nop
+0x0138f69c      e00315aa       mov x0, x21
+0x0138f6a0      030080d2       mov x3, 0
+0x0138f6a4      e40317aa       mov x4, x23
+0x0138f6a8      4f190094       bl sym.imp.objc_msgSend                 ; void *objc_msgSend(void *instance, char *selector)
+0x0138f6ac      e00317aa       mov x0, x23
+0x0138f6b0      4a190094       bl sym.imp.objc_release_1
+0x0138f6b4      e00316aa       mov x0, x22
+0x0138f6b8      48190094       bl sym.imp.objc_release_1
+0x0138f6bc      e00315aa       mov x0, x21
+0x0138f6c0      46190094       bl sym.imp.objc_release_1
+0x0138f6c4      1f2003d5       nop
+0x0138f6c8      555c1858       ldr x21, sym._OBJC_SELECTOR_REFERENCES_.301 ; [0x13c0250:8]=0x100000013b72fb
+0x0138f6cc      e00313aa       mov x0, x19
+0x0138f6d0      e10315aa       mov x1, x21
+0x0138f6d4      44190094       bl sym.imp.objc_msgSend                 ; void *objc_msgSend(void *instance, char *selector)
+0x0138f6d8      fd031daa       mov x29, x29
+0x0138f6dc      48190094       bl sym.imp.objc_retainAutoreleasedReturnValue_1
+0x0138f6e0      f60300aa       mov x22, x0
+0x0138f6e4      3d190094       bl sym.imp.objc_release_1
+0x0138f6e8      960100b4       cbz x22, 0x138f718
+0x0138f6ec      e00313aa       mov x0, x19
+0x0138f6f0      e10315aa       mov x1, x21
+0x0138f6f4      3c190094       bl sym.imp.objc_msgSend                 ; void *objc_msgSend(void *instance, char *selector)
+0x0138f6f8      fd031daa       mov x29, x29
+0x0138f6fc      40190094       bl sym.imp.objc_retainAutoreleasedReturnValue_1
+0x0138f700      f50300aa       mov x21, x0
+0x0138f704      080840f9       ldr x8, [x0, 0x10]
+0x0138f708      e10314aa       mov x1, x20
+0x0138f70c      00013fd6       blr x8
+0x0138f710      e00315aa       mov x0, x21
+0x0138f714      31190094       bl sym.imp.objc_release_1
+; CODE XREF from method.TWLicenseManager.changeState:message: @ 0x138f5d8(x)
+0x0138f718      1f2003d5       nop
+0x0138f71c      e1591858       ldr x1, sym._OBJC_SELECTOR_REFERENCES_.303 ; [0x13c0258:8]=0x100000013b7303
+0x0138f720      e00313aa       mov x0, x19
+0x0138f724      30190094       bl sym.imp.objc_msgSend                 ; void *objc_msgSend(void *instance, char *selector)
+0x0138f728      fd031daa       mov x29, x29
+0x0138f72c      34190094       bl sym.imp.objc_retainAutoreleasedReturnValue_1
+0x0138f730      f30300aa       mov x19, x0
+0x0138f734      1f2003d5       nop
+0x0138f738      41591858       ldr x1, sym._OBJC_SELECTOR_REFERENCES_.305 ; [0x13c0260:8]=0x100000013b7309 ; "\ts;\x01"
+0x0138f73c      2a190094       bl sym.imp.objc_msgSend                 ; void *objc_msgSend(void *instance, char *selector)
+0x0138f740      e00313aa       mov x0, x19
+0x0138f744      25190094       bl sym.imp.objc_release_1
+0x0138f748      e80f40f9       ldr x8, [var_18h]
+0x0138f74c      1f2003d5       nop
+0x0138f750      09471658       ldr x9, reloc.__stack_chk_guard         ; [0x13bc030:8]=0x80100000000002bd
+0x0138f754      290140f9       ldr x9, [x9]
+0x0138f758      3f0108eb       cmp x9, x8
+0x0138f75c      e1000054       b.ne 0x138f778
+0x0138f760      fd7b45a9       ldp x29, x30, [var_50h]
+0x0138f764      f44f44a9       ldp x20, x19, [var_40h]
+0x0138f768      f65743a9       ldp x22, x21, [var_30h]
+0x0138f76c      f85f42a9       ldp x24, x23, [var_20h]
+0x0138f770      ff830191       add sp, sp, 0x60
+0x0138f774      c0035fd6       ret
+0x0138f778      1e190094       bl sym.imp.__stack_chk_fail_1

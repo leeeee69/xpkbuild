@@ -79,3 +79,52 @@ make clean && make
 ## 回滚
 
 不装这个 tweak 即回到原面板；两者互不修改文件。
+
+---
+
+# twcrack — TianWen 带人脸版破甲
+
+`twcrack/` 是同一套分析流程的产物，目标为 `TianWen带人脸.dylib`（`@rpath/FrameXiang.dylib`，arm64，iOS 14.0+），
+授权判定纯本地：**三个全局量 + 两道 C 判据**，签名/证书固定只服务联网验证。
+
+```
+twcrack/
+  Tweak.xm      运行时 hook（v3：直接种 3 个门控全局量，覆盖 Swift 内联调用不到的选择子）
+  Makefile      Theos 构建
+  control       deb 包元信息
+  REPORT.md     v2 深度复核 × v3 net0 完整报告（判据清单、补丁表、出口穷举）
+  patches/      静态补丁脚本（等长字节替换，离线可用）
+    patch_tianwen.py        v1：5 处 / 39 字节
+    patch_tianwen_net0.py   v3：追加 4 个 HTTP 出口封死 + base URL 黑洞
+  evidence/     反汇编证据、方法表、选择子清单、差分证明
+  dist/         成品 dylib（未签名，按需自签/注入）
+```
+
+## 门控模型
+
+| 全局量 | 偏移 | 语义 |
+|---|---|---|
+| `_LCGateEnabled` | `0x13c1d38` | Ed25519 信封验签通过 |
+| `_LCGateForeground` | `0x13c1d39` | 前台租约新鲜 |
+| `_LCGateDeadline` | `0x13c1d40` | 到期时刻（`_LCUptime` 时基） |
+
+`valid = flagA && flagB && now < deadline`。写入侧被 `changeState:message:` 冲掉，所以只改读取侧。
+面板 5 条可达路径（`start`/`heartbeat`/`tick`/`logout`/授权按钮）已统一收口到 `-showPanel`。
+
+## 补丁与构建
+
+```bash
+# 静态补丁（输出 cracked dylib）
+python3 twcrack/patches/patch_tianwen_net0.py TianWen带人脸.dylib -o out.dylib
+
+# 运行时 tweak
+cd twcrack && THEOS=~/theos make package FINALPACKAGE=1
+```
+
+GitHub Actions 走 macOS runner 自动出 deb/dylib，产物在 Artifacts。
+
+## 边界
+
+- RTMP 推流**不受影响**：走 ffmpeg `libavformat/rtmppkt.c` socket 层，与所改 4 处无关。
+- net0 版除 RTMP 外**零 HTTP 请求**（出口穷举见 `evidence/`）。
+- `dist/` 为未签名产物，注入前自行 `codesign`/`ldid`。

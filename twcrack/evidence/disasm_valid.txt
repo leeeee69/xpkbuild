@@ -1,0 +1,25 @@
+  ;-- func.0138f4b4:
+92: method.TWLicenseManager.valid ();
+0x0138f4b4      28441910       adr x8, sym._LCGateEnabled              ; 0x13c1d38
+0x0138f4b8      1f2003d5       nop
+0x0138f4bc      08fddf08       ldarb w8, [x8]
+0x0138f4c0      1f050071       cmp w8, 1
+0x0138f4c4      21020054       b.ne 0x138f508
+0x0138f4c8      88431930       adr x8, sym._LCGateForeground           ; 0x13c1d39
+0x0138f4cc      1f2003d5       nop
+0x0138f4d0      08fddf08       ldarb w8, [x8]
+0x0138f4d4      1f050071       cmp w8, 1
+0x0138f4d8      81010054       b.ne 0x138f508
+0x0138f4dc      fd7bbfa9       stp x29, x30, [sp, -0x10]!
+0x0138f4e0      fd030091       mov x29, sp
+0x0138f4e4      69fdff97       bl sym._LCUptime
+0x0138f4e8      c8421910       adr x8, sym._LCGateDeadline             ; 0x13c1d40
+0x0138f4ec      1f2003d5       nop
+0x0138f4f0      08fddfc8       ldar x8, [x8]
+0x0138f4f4      0101679e       fmov d1, x8
+0x0138f4f8      0020611e       fcmp d0, d1
+0x0138f4fc      e0579f1a       cset w0, mi
+0x0138f500      fd7bc1a8       ldp x29, x30, [sp], 0x10
+0x0138f504      c0035fd6       ret
+0x0138f508      00008052       mov w0, 0
+0x0138f50c      c0035fd6       ret

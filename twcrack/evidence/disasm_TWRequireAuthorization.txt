@@ -1,0 +1,31 @@
+116: sym._TWRequireAuthorization ();
+0x013949a8      fd7bbfa9       stp x29, x30, [sp, -0x10]!
+0x013949ac      fd030091       mov x29, sp
+0x013949b0      489c1610       adr x8, sym._LCGateEnabled              ; 0x13c1d38
+0x013949b4      1f2003d5       nop
+0x013949b8      08fddf08       ldarb w8, [x8]
+0x013949bc      1f050071       cmp w8, 1
+0x013949c0      e1010054       b.ne 0x13949fc
+0x013949c4      a89b1630       adr x8, sym._LCGateForeground           ; 0x13c1d39
+0x013949c8      1f2003d5       nop
+0x013949cc      08fddf08       ldarb w8, [x8]
+0x013949d0      1f050071       cmp w8, 1
+0x013949d4      41010054       b.ne 0x13949fc
+0x013949d8      2ce8ff97       bl sym._LCUptime
+0x013949dc      289b1610       adr x8, sym._LCGateDeadline             ; 0x13c1d40
+0x013949e0      1f2003d5       nop
+0x013949e4      08fddfc8       ldar x8, [x8]
+0x013949e8      0101679e       fmov d1, x8
+0x013949ec      0020611e       fcmp d0, d1
+0x013949f0      65000054       b.pl 0x13949fc
+0x013949f4      20008052       mov w0, 1
+0x013949f8      07000014       b 0x1394a14
+0x013949fc      1f2003d5       nop
+0x01394a00      80bc1358       ldr x0, reloc._dispatch_main_q          ; [0x13bc190:8]=0x80100000000002e9
+0x01394a04      61d31310       adr x1, sym.___block_literal_global.1021 ; 0x13bc470
+0x01394a08      1f2003d5       nop
+0x01394a0c      ac040094       bl sym.imp.dispatch_async_1
+0x01394a10      00008052       mov w0, 0
+; CODE XREF from sym._TWRequireAuthorization @ 0x13949f8(x)
+0x01394a14      fd7bc1a8       ldp x29, x30, [sp], 0x10
+0x01394a18      c0035fd6       ret

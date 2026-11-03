@@ -1,0 +1,46 @@
+  ;-- func.013914b4:
+172: method.TWLicenseManager.tick (int64_t arg1);
+`- args(x0) vars(2:sp[0x10..0x20])
+0x013914b4      e923bd6d       stp d9, d8, [sp, -0x30]!
+0x013914b8      f44f01a9       stp x20, x19, [var_10h]
+0x013914bc      fd7b02a9       stp x29, x30, [var_20h]
+0x013914c0      fd830091       add x29, sp, 0x20
+0x013914c4      f30300aa       mov x19, x0                             ; arg1
+0x013914c8      1f2003d5       nop
+0x013914cc      a16a1758       ldr x1, sym._OBJC_SELECTOR_REFERENCES_.286 ; [0x13c0220:8]=0x100000013b7297
+0x013914d0      c5110094       bl sym.imp.objc_msgSend                 ; void *objc_msgSend(void *instance, char *selector)
+0x013914d4      80020034       cbz w0, 0x1391524
+0x013914d8      6cf5ff97       bl sym._LCUptime
+0x013914dc      081ca04e       mov v8.16b, v0.16b
+0x013914e0      1f2003d5       nop
+0x013914e4      a16a1758       ldr x1, sym._OBJC_SELECTOR_REFERENCES_.292 ; [0x13c0238:8]=0x100000013b72be
+0x013914e8      e00313aa       mov x0, x19
+0x013914ec      be110094       bl sym.imp.objc_msgSend                 ; void *objc_msgSend(void *instance, char *selector)
+0x013914f0      0021601e       fcmp d8, d0
+0x013914f4      8b010054       b.lt 0x1391524
+0x013914f8      1f2003d5       nop
+0x013914fc      a16d1758       ldr x1, sym._OBJC_SELECTOR_REFERENCES_.333 ; [0x13c02b0:8]=0x100000013b7395
+0x01391500      c3ec1510       adr x3, __CFConstantStringClassReference ; 0x13bd298
+0x01391504      1f2003d5       nop
+0x01391508      e00313aa       mov x0, x19
+0x0139150c      02008052       mov w2, 0
+0x01391510      b5110094       bl sym.imp.objc_msgSend                 ; void *objc_msgSend(void *instance, char *selector)
+0x01391514      1f2003d5       nop
+0x01391518      41701758       ldr x1, sym._OBJC_SELECTOR_REFERENCES_.374 ; [0x13c0320:8]=0x100000013b74a9
+0x0139151c      e00313aa       mov x0, x19
+0x01391520      b1110094       bl sym.imp.objc_msgSend                 ; void *objc_msgSend(void *instance, char *selector)
+0x01391524      1f2003d5       nop
+0x01391528      81691758       ldr x1, sym._OBJC_SELECTOR_REFERENCES_.303 ; [0x13c0258:8]=0x100000013b7303
+0x0139152c      e00313aa       mov x0, x19
+0x01391530      ad110094       bl sym.imp.objc_msgSend                 ; void *objc_msgSend(void *instance, char *selector)
+0x01391534      fd031daa       mov x29, x29
+0x01391538      b1110094       bl sym.imp.objc_retainAutoreleasedReturnValue_1
+0x0139153c      f30300aa       mov x19, x0
+0x01391540      1f2003d5       nop
+0x01391544      e1681758       ldr x1, sym._OBJC_SELECTOR_REFERENCES_.305 ; [0x13c0260:8]=0x100000013b7309 ; "\ts;\x01"
+0x01391548      a7110094       bl sym.imp.objc_msgSend                 ; void *objc_msgSend(void *instance, char *selector)
+0x0139154c      e00313aa       mov x0, x19
+0x01391550      fd7b42a9       ldp x29, x30, [var_20h]
+0x01391554      f44f41a9       ldp x20, x19, [var_10h]
+0x01391558      e923c36c       ldp d9, d8, [sp], 0x30
+0x0139155c      9f110014       b sym.imp.objc_release_1

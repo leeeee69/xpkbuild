@@ -1,0 +1,27 @@
+(nofunc) 0x2d8448 [DATA:r--] invalid
+(nofunc) 0x2d8a00 [DATA:r--] invalid
+sym.___29__TWLicenseManager_heartbeat__block_invoke 0x13913d0 [ICOD:--x] ldr x23, str.valid
+method.TWLicenseManager.remaining 0x139157c [ICOD:--x] ldr x1, str.valid
+method.TWLicenseManager.displayStatus 0x13916f4 [ICOD:--x] ldr x1, str.valid
+method.TWLicenseManager.showPanel 0x13921bc [ICOD:--x] ldr x1, str.valid
+sym.___29__TWLicenseManager_showPanel__block_invoke 0x1392244 [ICOD:--x] ldr x1, str.valid
+method.TWLicensePanel.update 0x1393b7c [ICOD:--x] ldr x1, str.valid
+sym.___TWSetAuthorizationHandler_block_invoke 0x1394ca8 [ICOD:--x] ldr x1, str.valid
+(nofunc) 0x2d8320 [DATA:r--] invalid
+(nofunc) 0x2d8a80 [DATA:r--] invalid
+method.TWLicenseManager.start 0x13900b8 [ICOD:--x] ldr x1, str.showPanel
+method.TWLicenseManager.start 0x1390404 [ICOD:--x] ldr x8, str.showPanel
+sym.___29__TWLicenseManager_heartbeat__block_invoke 0x139144c [ICOD:--x] ldr x1, str.showPanel
+sym.___29__TWLicenseManager_heartbeat__block_invoke 0x1391468 [ICOD:--x] ldr x1, str.showPanel
+method.TWLicenseManager.tick 0x1391518 [ICOD:--x] ldr x1, str.showPanel
+method.TWLicenseManager.logout 0x1391a6c [ICOD:--x] ldr x1, str.showPanel
+sym.___29__TWLicenseManager_showPanel__block_invoke 0x1392264 [ICOD:--x] ldr x1, str.showPanel
+sym.___TWShowLicensePanel_block_invoke 0x1394a68 [ICOD:--x] ldr x1, str.showPanel
+(nofunc) 0x2d8220 [DATA:r--] invalid
+(nofunc) 0x2d8aa0 [DATA:r--] invalid
+(nofunc) 0x2d9718 [DATA:r--] invalid
+method.TWLicenseManager.changeState:message: 0x138f548 [ICOD:--x] ldr x22, str.authorized
+method.TWLicenseManager.tick 0x13914cc [ICOD:--x] ldr x1, str.authorized
+(nofunc) 0x2d8870 [DATA:r--] invalid
+(nofunc) 0x2d8a68 [DATA:r--] invalid
+sym._TWLicenseDisplayStatus 0x1394b84 [ICOD:--x] ldr x1, str.displayStatus

@@ -1,0 +1,64 @@
+244: sym._TWCapture (int64_t arg1, int64_t arg2, int64_t arg3, int64_t arg4, int64_t arg5, int64_t arg6);
+`- args(x0, x1, x2, x3, x4, x5) vars(3:sp[0x10..0x30])
+0x013958c0      f85fbca9       stp x24, x23, [sp, -0x40]!
+0x013958c4      f65701a9       stp x22, x21, [var_10h]
+0x013958c8      f44f02a9       stp x20, x19, [var_20h]
+0x013958cc      fd7b03a9       stp x29, x30, [var_30h]
+0x013958d0      fdc30091       add x29, sp, 0x30
+0x013958d4      f80305aa       mov x24, x5                             ; arg6
+0x013958d8      f50304aa       mov x21, x4                             ; arg5
+0x013958dc      f60303aa       mov x22, x3                             ; arg4
+0x013958e0      f40302aa       mov x20, x2                             ; arg3
+0x013958e4      f70301aa       mov x23, x1                             ; arg2
+0x013958e8      f30300aa       mov x19, x0                             ; arg1
+0x013958ec      b8000094       bl sym.imp.objc_retain_1
+0x013958f0      e00314aa       mov x0, x20
+0x013958f4      b6000094       bl sym.imp.objc_retain_1
+0x013958f8      e00315aa       mov x0, x21
+0x013958fc      b4000094       bl sym.imp.objc_retain_1
+0x01395900      c8221610       adr x8, sym._TWReady                    ; 0x13c1d58
+0x01395904      1f2003d5       nop
+0x01395908      08fddf08       ldarb w8, [x8]
+0x0139590c      1f050071       cmp w8, 1
+0x01395910      61010054       b.ne 0x139593c
+0x01395914      43faff97       bl sym._TWIsAuthorized
+0x01395918      20010034       cbz w0, 0x139593c
+0x0139591c      980300b4       cbz x24, 0x139598c
+0x01395920      e00313aa       mov x0, x19
+0x01395924      e10317aa       mov x1, x23
+0x01395928      e20314aa       mov x2, x20
+0x0139592c      e30316aa       mov x3, x22
+0x01395930      e40315aa       mov x4, x21
+0x01395934      00033fd6       blr x24
+0x01395938      15000014       b 0x139598c
+0x0139593c      a1a11030       adr x1, 0x13b6d71
+0x01395940      1f2003d5       nop
+0x01395944      e00313aa       mov x0, x19
+0x01395948      55ffff97       bl sym._TWGet
+0x0139594c      fd031daa       mov x29, x29
+0x01395950      ab000094       bl sym.imp.objc_retainAutoreleasedReturnValue_1
+0x01395954      f80300aa       mov x24, x0
+0x01395958      1f2003d5       nop
+0x0139595c      217c1558       ldr x1, sym._OBJC_SELECTOR_REFERENCES_.47 ; [0x13c08e0:8]=0x100000013b79ed
+0x01395960      e20317aa       mov x2, x23
+0x01395964      a0000094       bl sym.imp.objc_msgSend                 ; void *objc_msgSend(void *instance, char *selector)
+0x01395968      e0000034       cbz w0, 0x1395984
+0x0139596c      e00318aa       mov x0, x24
+0x01395970      e10317aa       mov x1, x23
+0x01395974      e20314aa       mov x2, x20
+0x01395978      e30316aa       mov x3, x22
+0x0139597c      e40315aa       mov x4, x21
+0x01395980      99000094       bl sym.imp.objc_msgSend                 ; void *objc_msgSend(void *instance, char *selector)
+0x01395984      e00318aa       mov x0, x24
+0x01395988      94000094       bl sym.imp.objc_release_1
+; CODE XREF from sym._TWCapture @ 0x1395938(x)
+0x0139598c      e00315aa       mov x0, x21
+0x01395990      92000094       bl sym.imp.objc_release_1
+0x01395994      e00314aa       mov x0, x20
+0x01395998      90000094       bl sym.imp.objc_release_1
+0x0139599c      e00313aa       mov x0, x19
+0x013959a0      fd7b43a9       ldp x29, x30, [var_30h]
+0x013959a4      f44f42a9       ldp x20, x19, [var_20h]
+0x013959a8      f65741a9       ldp x22, x21, [var_10h]
+0x013959ac      f85fc4a8       ldp x24, x23, [sp], 0x40
+0x013959b0      8a000014       b sym.imp.objc_release_1

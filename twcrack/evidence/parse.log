@@ -1,0 +1,168 @@
+== HEADER ==
+path      : E:\��ȫ����\TianWen\sample\TianWen������.dylib
+cputype   : 0x100000c (arm64)
+filetype  : 6 (6=dylib,2=exe,8=bundle)
+ncmds     : 48  sizeofcmds: 7936
+flags     : 0x910085
+
+== LOAD COMMANDS ==
+  LC_SEGMENT_64            size=1192
+  LC_SEGMENT_64            size=1032
+  LC_SEGMENT_64            size=1112
+  LC_SEGMENT_64            size=712
+  LC_SEGMENT_64            size=552
+  LC_SEGMENT_64            size=712
+  LC_SEGMENT_64            size=72
+  LC_ID_DYLIB              size=48
+  LC_FILESET_ENTRY         size=16
+  LC_0x80000033            size=16
+  LC_SYMTAB                size=24
+  LC_DYSYMTAB              size=80
+  LC_UUID                  size=24
+  LC_BUILD_VERSION         size=32
+  LC_SOURCE_VERSION        size=16
+  LC_ENCRYPTION_INFO_64    size=24
+  LC_LOAD_DYLIB            size=88
+  LC_LOAD_DYLIB            size=80
+  LC_LOAD_DYLIB            size=96
+  LC_LOAD_DYLIB            size=88
+  LC_LOAD_DYLIB            size=88
+  LC_LOAD_DYLIB            size=88
+  LC_LOAD_DYLIB            size=88
+  LC_LOAD_DYLIB            size=80
+  LC_LOAD_DYLIB            size=112
+  LC_LOAD_DYLIB            size=88
+  LC_LOAD_DYLIB            size=88
+  LC_LOAD_DYLIB            size=88
+  LC_LOAD_DYLIB            size=80
+  LC_LOAD_DYLIB            size=88
+  LC_LOAD_DYLIB            size=88
+  LC_LOAD_DYLIB            size=80
+  LC_LOAD_DYLIB            size=80
+  LC_LOAD_DYLIB            size=88
+  LC_LOAD_DYLIB            size=48
+  LC_LOAD_DYLIB            size=56
+  LC_LOAD_DYLIB            size=56
+  LC_LOAD_DYLIB            size=64
+  LC_LOAD_WEAK_DYLIB       size=72
+  LC_LOAD_WEAK_DYLIB       size=64
+  LC_LOAD_WEAK_DYLIB       size=64
+  LC_LOAD_WEAK_DYLIB       size=64
+  LC_LOAD_WEAK_DYLIB       size=64
+  LC_LOAD_DYLIB            size=64
+  LC_RPATH                 size=32
+  LC_FUNCTION_STARTS       size=16
+  LC_DATA_IN_CODE          size=16
+  LC_CODE_SIGNATURE        size=16
+
+== SEGMENTS / SECTIONS ==
+  __TEXT           vmaddr=0x0 vmsize=0x264000   fileoff=0x0        filesize=0x264000   prot=5/5
+      __text             __TEXT           addr=0x4000      size=0x1467dc   off=0x4000    
+      __stubs            __TEXT           addr=0x14a7dc    size=0x13e0     off=0x14a7dc  
+      __objc_stubs       __TEXT           addr=0x14bbc0    size=0x7da0     off=0x14bbc0  
+      __init_offsets     __TEXT           addr=0x153960    size=0x24       off=0x153960  
+      __objc_methlist    __TEXT           addr=0x153988    size=0x220c     off=0x153988  
+      __cstring          __TEXT           addr=0x155b94    size=0x1ad3f    off=0x155b94  
+      __const            __TEXT           addr=0x1708e0    size=0xc8f07    off=0x1708e0  
+      __gcc_except_tab   __TEXT           addr=0x2397e8    size=0xd490     off=0x2397e8  
+      __objc_classname   __TEXT           addr=0x246c78    size=0x368      off=0x246c78  
+      __ustring          __TEXT           addr=0x246fe0    size=0x278a     off=0x246fe0  
+      __objc_methname    __TEXT           addr=0x24976a    size=0x78a0     off=0x24976a  
+      __objc_methtype    __TEXT           addr=0x25100a    size=0x16bb     off=0x25100a  
+      __unwind_info      __TEXT           addr=0x2526c8    size=0x51a0     off=0x2526c8  
+      __eh_frame         __TEXT           addr=0x257868    size=0xc0a0     off=0x257868  
+  __DATA_CONST     vmaddr=0x264000 vmsize=0x2c000    fileoff=0x264000   filesize=0x2c000    prot=3/3
+      __got              __DATA_CONST     addr=0x264000    size=0x1258     off=0x264000  
+      __const            __DATA_CONST     addr=0x265258    size=0x23198    off=0x265258  
+      __cfstring         __DATA_CONST     addr=0x2883f0    size=0x4d60     off=0x2883f0  
+      __cma_oldcls       __DATA_CONST     addr=0x28d150    size=0x90       off=0x28d150  
+      __objc_catlist     __DATA_CONST     addr=0x28d1e0    size=0x28       off=0x28d1e0  
+      __cma_oldproto     __DATA_CONST     addr=0x28d208    size=0x58       off=0x28d208  
+      __objc_imageinfo   __DATA_CONST     addr=0x28d260    size=0x8        off=0x28d260  
+      __objc_intobj      __DATA_CONST     addr=0x28d268    size=0x1c8      off=0x28d268  
+      __objc_arraydata   __DATA_CONST     addr=0x28d430    size=0xe0       off=0x28d430  
+      __objc_arrayobj    __DATA_CONST     addr=0x28d510    size=0xc0       off=0x28d510  
+      __objc_classlist   __DATA_CONST     addr=0x28d5d0    size=0xa0       off=0x28d5d0  
+      __objc_protolist   __DATA_CONST     addr=0x28d670    size=0x70       off=0x28d670  
+  __DATA           vmaddr=0x290000 vmsize=0x10f8000  fileoff=0x290000   filesize=0x10000    prot=3/3
+      __objc_const       __DATA           addr=0x290000    size=0x3878     off=0x290000  
+      __objc_selrefs     __DATA           addr=0x293878    size=0x23a8     off=0x293878  
+      __objc_classrefs   __DATA           addr=0x295c20    size=0x360      off=0x295c20  
+      __objc_superrefs   __DATA           addr=0x295f80    size=0x48       off=0x295f80  
+      __objc_ivar        __DATA           addr=0x295fc8    size=0x350      off=0x295fc8  
+      __objc_data        __DATA           addr=0x296318    size=0x5a0      off=0x296318  
+      __data             __DATA           addr=0x2968c0    size=0x5c18     off=0x2968c0  
+      __s_async_hook     __DATA           addr=0x29c4d8    size=0x190      off=0x29c4d8  
+      __swift56_hooks    __DATA           addr=0x29c668    size=0xb0       off=0x29c668  
+      __thread_vars      __DATA           addr=0x29c718    size=0x120      off=0x29c718  
+      __thread_bss       __DATA           addr=0x29c838    size=0x5dde8    off=0x0       
+      __bss              __DATA           addr=0x2fa620    size=0x456a0    off=0x0       
+      __common           __DATA           addr=0x33fcc0    size=0x1044420  off=0x0       
+  __TWTEXT         vmaddr=0x1388000 vmsize=0x34000    fileoff=0x2a0000   filesize=0x34000    prot=5/5
+      __text             __TWTEXT         addr=0x138c000   size=0x9bb4     off=0x2a4000  
+      __stubs            __TWTEXT         addr=0x1395bb4   size=0x204      off=0x2adbb4  
+      __literals         __TWTEXT         addr=0x1395dc0   size=0x28       off=0x2addc0  
+      __cstring          __TWTEXT         addr=0x1395de8   size=0x20fe7    off=0x2adde8  
+      __objc_methname    __TWTEXT         addr=0x13b6dcf   size=0x1bc4     off=0x2cedcf  
+      __ustring          __TWTEXT         addr=0x13b8994   size=0x554      off=0x2d0994  
+      __objc_methlist    __TWTEXT         addr=0x13b8ee8   size=0x510      off=0x2d0ee8  
+      __unwind_info      __TWTEXT         addr=0x13b93f8   size=0x1064     off=0x2d13f8  
+  __TWCONST        vmaddr=0x13bc000 vmsize=0x4000     fileoff=0x2d4000   filesize=0x4000     prot=3/3
+      __got              __TWCONST        addr=0x13bc000   size=0x2a8      off=0x2d4000  
+      __const            __TWCONST        addr=0x13bc2a8   size=0x410      off=0x2d42a8  
+      __cfstring         __TWCONST        addr=0x13bc6b8   size=0xfe0      off=0x2d46b8  
+      __objc_protolist   __TWCONST        addr=0x13bd698   size=0x18       off=0x2d5698  
+      __objc_classlist   __TWCONST        addr=0x13bd6b0   size=0x10       off=0x2d56b0  
+      __objc_imageinfo   __TWCONST        addr=0x13bd6c0   size=0x8        off=0x2d56c0  
+  __TWDATA         vmaddr=0x13c0000 vmsize=0x4000     fileoff=0x2d8000   filesize=0x4000     prot=3/3
+      __objc_selrefs     __TWDATA         addr=0x13c0000   size=0xce0      off=0x2d8000  
+      __objc_data        __TWDATA         addr=0x13c0ce0   size=0xa0       off=0x2d8ce0  
+      __objc_classrefs   __TWDATA         addr=0x13c0d80   size=0x1b0      off=0x2d8d80  
+      __objc_superrefs   __TWDATA         addr=0x13c0f30   size=0x10       off=0x2d8f30  
+      __objc_const       __TWDATA         addr=0x13c0f40   size=0xc40      off=0x2d8f40  
+      __data             __TWDATA         addr=0x13c1b80   size=0x120      off=0x2d9b80  
+      __objc_ivar        __TWDATA         addr=0x13c1ca0   size=0x84       off=0x2d9ca0  
+      __bss              __TWDATA         addr=0x13c1d28   size=0x70       off=0x0       
+  __LINKEDIT       vmaddr=0x13c4000 vmsize=0x20000    fileoff=0x2dc000   filesize=0x1c970    prot=1/1
+
+== DYLIB DEPENDENCIES ==
+  LC_ID_DYLIB            @rpath/FrameXiang.dylib
+  LC_LOAD_DYLIB          /System/Library/Frameworks/Foundation.framework/Foundation
+  LC_LOAD_DYLIB          /System/Library/Frameworks/Security.framework/Security
+  LC_LOAD_DYLIB          /System/Library/Frameworks/CoreFoundation.framework/CoreFoundation
+  LC_LOAD_DYLIB          /System/Library/Frameworks/CoreGraphics.framework/CoreGraphics
+  LC_LOAD_DYLIB          /System/Library/Frameworks/CoreImage.framework/CoreImage
+  LC_LOAD_DYLIB          /System/Library/Frameworks/QuartzCore.framework/QuartzCore
+  LC_LOAD_DYLIB          /System/Library/Frameworks/Accelerate.framework/Accelerate
+  LC_LOAD_DYLIB          /System/Library/Frameworks/PhotosUI.framework/PhotosUI
+  LC_LOAD_DYLIB          /System/Library/Frameworks/UniformTypeIdentifiers.framework/UniformTypeIdentifiers
+  LC_LOAD_DYLIB          /System/Library/Frameworks/CoreMedia.framework/CoreMedia
+  LC_LOAD_DYLIB          /System/Library/Frameworks/CoreVideo.framework/CoreVideo
+  LC_LOAD_DYLIB          /System/Library/Frameworks/AVFoundation.framework/AVFoundation
+  LC_LOAD_DYLIB          /System/Library/Frameworks/UIKit.framework/UIKit
+  LC_LOAD_DYLIB          /System/Library/Frameworks/VideoToolbox.framework/VideoToolbox
+  LC_LOAD_DYLIB          /System/Library/Frameworks/AudioToolbox.framework/AudioToolbox
+  LC_LOAD_DYLIB          /System/Library/Frameworks/Network.framework/Network
+  LC_LOAD_DYLIB          /System/Library/Frameworks/Metal.framework/Metal
+  LC_LOAD_DYLIB          /System/Library/Frameworks/CryptoKit.framework/CryptoKit
+  LC_LOAD_DYLIB          /usr/lib/libc++.1.dylib
+  LC_LOAD_DYLIB          /usr/lib/libobjc.A.dylib
+  LC_LOAD_DYLIB          /usr/lib/libSystem.B.dylib
+  LC_LOAD_DYLIB          /usr/lib/swift/libswiftCore.dylib
+  LC_LOAD_WEAK_DYLIB     /usr/lib/swift/libswiftCoreFoundation.dylib
+  LC_LOAD_WEAK_DYLIB     /usr/lib/swift/libswiftDarwin.dylib
+  LC_LOAD_WEAK_DYLIB     /usr/lib/swift/libswiftDispatch.dylib
+  LC_LOAD_WEAK_DYLIB     /usr/lib/swift/libswiftObjectiveC.dylib
+  LC_LOAD_WEAK_DYLIB     /usr/lib/swift/libswiftXPC.dylib
+  LC_LOAD_DYLIB          /usr/lib/swift/libswiftFoundation.dylib
+
+== RPATHS ==
+   /usr/lib/swift
+
+== SYMTAB: 1480 symbols ==
+defined=631 undefined=631
+wrote symbols.txt
+wrote strings_dump.txt
+
+== OBJC CLASSES: 0 ==
+wrote layout.json

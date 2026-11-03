@@ -1,0 +1,52 @@
+  ; DATA XREF from sym._TWSetAuthorizationHandler @ 0x1394bdc(r)
+192: sym.___TWSetAuthorizationHandler_block_invoke (int64_t arg1);
+`- args(x0) vars(3:sp[0x10..0x30])
+0x01394c2c      f85fbca9       stp x24, x23, [sp, -0x40]!
+0x01394c30      f65701a9       stp x22, x21, [var_10h]
+0x01394c34      f44f02a9       stp x20, x19, [var_20h]
+0x01394c38      fd7b03a9       stp x29, x30, [var_30h]
+0x01394c3c      fdc30091       add x29, sp, 0x30
+0x01394c40      f40300aa       mov x20, x0                             ; arg1
+0x01394c44      151040f9       ldr x21, [x0, 0x20]                     ; arg1
+0x01394c48      77010090       adrp x23, sym._OBJC_SELECTOR_REFERENCES_ ; 0x13c0000
+0x01394c4c      e0c246f9       ldr x0, [x23, 0xd80]                    ; [0x13c0d80:8]=0x100000013c0ce0 ; sym._OBJC_CLASSLIST_REFERENCES___
+                                                                       [55] -rw- section size 432 named 55.__TWDATA.__objc_classrefs
+0x01394c50      1f2003d5       nop
+0x01394c54      f3dd1558       ldr x19, sym._OBJC_SELECTOR_REFERENCES_.958 ; [0x13c0810:8]=0x100000013b7960 ; "`y;\x01"
+0x01394c58      e10313aa       mov x1, x19
+0x01394c5c      e2030094       bl sym.imp.objc_msgSend                 ; void *objc_msgSend(void *instance, char *selector)
+0x01394c60      fd031daa       mov x29, x29
+0x01394c64      e6030094       bl sym.imp.objc_retainAutoreleasedReturnValue_1
+0x01394c68      f60300aa       mov x22, x0
+0x01394c6c      1f2003d5       nop
+0x01394c70      41e01558       ldr x1, sym._OBJC_SELECTOR_REFERENCES_.1026 ; [0x13c0878:8]=0x100000013b7d0f
+0x01394c74      e20315aa       mov x2, x21
+0x01394c78      db030094       bl sym.imp.objc_msgSend                 ; void *objc_msgSend(void *instance, char *selector)
+0x01394c7c      e00316aa       mov x0, x22
+0x01394c80      d6030094       bl sym.imp.objc_release_1
+0x01394c84      941240f9       ldr x20, [x20, 0x20]
+0x01394c88      940200b4       cbz x20, 0x1394cd8
+0x01394c8c      e0c246f9       ldr x0, [x23, 0xd80]
+0x01394c90      e10313aa       mov x1, x19
+0x01394c94      d4030094       bl sym.imp.objc_msgSend                 ; void *objc_msgSend(void *instance, char *selector)
+0x01394c98      fd031daa       mov x29, x29
+0x01394c9c      d8030094       bl sym.imp.objc_retainAutoreleasedReturnValue_1
+0x01394ca0      f30300aa       mov x19, x0
+0x01394ca4      1f2003d5       nop
+0x01394ca8      01bd1558       ldr x1, sym._OBJC_SELECTOR_REFERENCES_.487 ; [0x13c0448:8]=0x100000013b7722 ; "\"w;\x01"
+0x01394cac      ce030094       bl sym.imp.objc_msgSend                 ; void *objc_msgSend(void *instance, char *selector)
+0x01394cb0      e10300aa       mov x1, x0
+0x01394cb4      880a40f9       ldr x8, [x20, 0x10]
+0x01394cb8      e00314aa       mov x0, x20
+0x01394cbc      00013fd6       blr x8
+0x01394cc0      e00313aa       mov x0, x19
+0x01394cc4      fd7b43a9       ldp x29, x30, [var_30h]
+0x01394cc8      f44f42a9       ldp x20, x19, [var_20h]
+0x01394ccc      f65741a9       ldp x22, x21, [var_10h]
+0x01394cd0      f85fc4a8       ldp x24, x23, [sp], 0x40
+0x01394cd4      c1030014       b sym.imp.objc_release_1
+0x01394cd8      fd7b43a9       ldp x29, x30, [var_30h]
+0x01394cdc      f44f42a9       ldp x20, x19, [var_20h]
+0x01394ce0      f65741a9       ldp x22, x21, [var_10h]
+0x01394ce4      f85fc4a8       ldp x24, x23, [sp], 0x40
+0x01394ce8      c0035fd6       ret

@@ -1,0 +1,10 @@
+  ; CALL XREF from sym.func.000087c4 @ 0x87e8(x)
+32: sym._TWFrameAllowed ();
+0x01394d08      88821610       adr x8, sym._TWReady                    ; 0x13c1d58
+0x01394d0c      1f2003d5       nop
+0x01394d10      08fddf08       ldarb w8, [x8]
+0x01394d14      1f050071       cmp w8, 1
+0x01394d18      41000054       b.ne 0x1394d20
+0x01394d1c      41fdff17       b sym._TWIsAuthorized
+0x01394d20      00008052       mov w0, 0
+0x01394d24      c0035fd6       ret
