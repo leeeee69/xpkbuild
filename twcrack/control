@@ -1,0 +1,9 @@
+Package: com.xiaopan.twcrack
+Name: TW 破甲
+Version: 1.0.0
+Architecture: iphoneos-arm
+Description: TianWen 带人脸版授权绕过（运行时 hook，不改原 dylib）
+Maintainer: xiaopan
+Author: xiaopan
+Section: Tweaks
+Depends: mobilesubstrate
